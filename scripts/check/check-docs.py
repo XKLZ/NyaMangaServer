@@ -5,7 +5,9 @@ import subprocess
 from urllib.parse import unquote, urlsplit
 
 root = pathlib.Path(__file__).resolve().parent.parent.parent
-files = subprocess.check_output(['rg', '--files', '--hidden', '-g', '*.md', '-g', '!.git'], cwd=root, text=True).splitlines()
+files = sorted({name for name in subprocess.check_output(
+    ['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'],
+    cwd=root, text=True).split('\0') if name.endswith('.md') and (root / name).is_file()})
 errors = []
 count = 0
 for name in files:
