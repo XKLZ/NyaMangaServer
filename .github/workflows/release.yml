@@ -30,6 +30,8 @@ jobs:
       - name: Anonymous exact-image API and standard restore
         run: |
           VERSION=$(cat internal/buildinfo/VERSION)
+          mkdir -p .runtime/tests
+          chmod 700 .runtime .runtime/tests
           sudo python3 deploy/tests/release-image.py --image "ghcr.io/xklz/nyamangaserver:$VERSION" --commit "$GITHUB_SHA" --directory "$PWD/.runtime/tests/release-image"
       - name: Export the same tested image and installation bundle
         run: python3 deploy/package-release.py --directory .runtime/release-artifacts
@@ -37,6 +39,7 @@ jobs:
         with:
           name: tested-release
           path: .runtime/release-artifacts/*
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
           compression-level: 0

@@ -1,5 +1,7 @@
 """Anonymous installation and version checks; no Docker or live instance access."""
 import importlib.util
+import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -20,9 +22,33 @@ def load(name, path):
 configure = load('configure', 'deploy/configure.py')
 version = load('release_version', 'scripts/check/release-version.py')
 package = load('package_release', 'deploy/package-release.py')
+publish = load('publish_release', 'deploy/publish-release.py')
 
 
 class ReleaseTools(unittest.TestCase):
+    def test_partial_publication_only_resumes_exact_complete_draft(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            asset = directory / 'SHA256SUMS'
+            asset.write_bytes(b'anonymous checksum receipt\n')
+            commit = 'a' * 40
+            draft = {'draft': True, 'prerelease': True, 'tag_name': 'v0.7.0-beta.1', 'target_commitish': commit,
+                     'assets': [{'name': asset.name, 'size': asset.stat().st_size, 'state': 'uploaded', 'digest': 'sha256:' + hashlib.sha256(asset.read_bytes()).hexdigest()}]}
+            publish.validate_draft(draft, commit, draft['tag_name'], directory, {asset.name})
+            for changed in ({'draft': False}, {'prerelease': False}, {'target_commitish': 'b' * 40}, {'assets': []}, {'assets': draft['assets'] * 2}):
+                with self.assertRaises(ValueError):
+                    publish.validate_draft(draft | changed, commit, draft['tag_name'], directory, {asset.name})
+            for field, value in [('digest', None), ('digest', 'sha256:' + '0' * 64), ('state', 'new'), ('size', 1)]:
+                changed = copy.deepcopy(draft)
+                changed['assets'][0][field] = value
+                with self.assertRaises(ValueError):
+                    publish.validate_draft(changed, commit, draft['tag_name'], directory, {asset.name})
+            identity = 'sha256:' + 'b' * 64
+            publish.validate_existing_image({'config': {'digest': identity}}, identity, True)
+            for manifest, known in [({'config': {'digest': identity}}, False), ({'config': {'digest': 'sha256:' + 'c' * 64}}, True), ({'manifests': []}, True)]:
+                with self.assertRaises(ValueError):
+                    publish.validate_existing_image(manifest, identity, known)
+
     def test_install_bundle_contains_no_host_identity_or_runtime(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve()
