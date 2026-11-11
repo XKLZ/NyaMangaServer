@@ -1,4 +1,4 @@
-// Production-page checks against an explicitly supplied anonymous NAS instance.
+// Production-page checks against an explicitly supplied anonymous test instance.
 // Does not start any local fixture, Vite server, or application process.
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
@@ -7,8 +7,10 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.join(root, '.runtime/cache/playwright');
 const { chromium } = await import(path.join(root, 'web/node_modules/playwright/index.mjs'));
-const [origin, credentialsPath, output] = process.argv.slice(2);
-assert.ok(/^http:\/\/192\.168\.[0-9.]+:19400$/.test(origin), 'explicit anonymous NAS origin required');
+const [origin, credentialsPath, output, mode] = process.argv.slice(2);
+const loopback = /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+assert.ok(mode === '--anonymous-loopback' ? loopback : !mode && /^http:\/\/192\.168\.[0-9.]+:19400$/.test(origin), 'explicit anonymous NAS origin or opted-in loopback fixture required');
+assert.ok(!['8080', '5173', '8081', '5174'].includes(new URL(origin).port), 'daily and historical pilot ports are forbidden');
 const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'));
 await mkdir(output, { recursive: false, mode: 0o700 });
 const browser = await chromium.launch();
@@ -26,7 +28,9 @@ try {
     assert.match(response.headers()['content-security-policy'] || '', /default-src/);
     await page.getByLabel('用户名', { exact: true }).fill(credentials.username);
     await page.getByLabel('密码', { exact: true }).fill(credentials.password);
+    const login = page.waitForResponse(response => response.url() === origin + '/api/v1/auth/login' && response.request().method() === 'POST');
     await page.getByRole('button', { name: '登录', exact: true }).click();
+    assert.equal((await login).status(), 200, 'production browser login');
     await page.getByRole('switch', { name: '深色主题' }).waitFor();
     const currentDark = (await page.getByRole('switch', { name: '深色主题' }).getAttribute('aria-checked')) === 'true';
     assert.equal(currentDark, dark, 'theme follows explicit test context');

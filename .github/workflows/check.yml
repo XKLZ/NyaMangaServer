@@ -31,12 +31,12 @@ jobs:
       - run: python3 deploy/tests/config-static.py && python3 deploy/tests/beta-tools.py && python3 deploy/tests/release-tools.py
       - run: python3 scripts/check/public-tree.py
       - run: PLAYWRIGHT_BROWSERS_PATH="$PWD/.runtime/cache/playwright" npm --prefix web exec -- playwright install --with-deps chromium
-      - name: Existing anonymous production browser and process checks
+      - name: Fresh anonymous production browser, API and standard restore
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.runtime/cache/playwright
           NO_PROXY: localhost,127.0.0.1
         run: |
           node scripts/test/foundation-smoke.mjs
           node scripts/test/metadata-smoke.mjs
-          npm --prefix web run test:e2e
+          python3 deploy/tests/release-native.py --server .runtime/bin/server --restore .runtime/bin/instance-restore --directory .runtime/tests/release-native --browser
       - run: git diff --check

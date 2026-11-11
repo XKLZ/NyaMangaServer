@@ -27,6 +27,7 @@ def main():
     parser.add_argument('--server', type=Path, required=True)
     parser.add_argument('--restore', type=Path, required=True)
     parser.add_argument('--directory', type=Path, required=True)
+    parser.add_argument('--browser', action='store_true', help='run production-page browser checks against this fresh loopback instance')
     args = parser.parse_args()
     os.umask(0o077)
     root = args.directory.resolve()
@@ -96,6 +97,14 @@ def main():
     try:
         start(config_files[0])
         run('beta-api.py', '--url', origin, '--token-file', root / 'input/setup-token', '--evidence', evidence, '--image', root / 'input/foreground.png')
+        if args.browser:
+            # Test persistence across a normal restart and keep browser login
+            # independent of the preceding account/password rate-limit tests.
+            stop()
+            start(config_files[0])
+            subprocess.run(['node', str(ROOT / 'deploy/tests/beta-browser.mjs'), origin,
+                            str(evidence / 'credentials.json'), str(root / 'browser'),
+                            '--anonymous-loopback'], env=environment, check=True)
         run('beta-recovery.py', 'backup', '--url', origin, '--evidence', evidence)
         stop()
         start(config_files[1])
@@ -108,7 +117,7 @@ def main():
         status = subprocess.check_output([str(args.restore.resolve()), '--config', str(config_files[1]), '--status'], env=environment)
         json.loads(status)
         (root / 'paired-restore-status.json').write_bytes(status)
-        (root / 'summary.json').write_text(json.dumps({'status': 'passed', 'scope': 'native synthetic API and standard restore', 'real_model': False, 'docker': False}) + '\n')
+        (root / 'summary.json').write_text(json.dumps({'status': 'passed', 'scope': 'native synthetic API and standard restore', 'browser': args.browser, 'real_model': False, 'docker': False}) + '\n')
         print('PASS anonymous production assets, API and standard restore; both instances stopped')
     finally:
         stop()
