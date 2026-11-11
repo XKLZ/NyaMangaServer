@@ -1,0 +1,24 @@
+name: 问题报告
+description: 使用匿名材料描述错误或异常
+body:
+  - type: markdown
+    attributes:
+      value: 请勿上传数据库、备份、Cookie、授权码、漫画或私人截图。安全问题请阅读 SECURITY.md。
+  - type: input
+    id: version
+    attributes:
+      label: 版本与构建身份
+      description: 从设置概览复制；同时说明系统、CPU架构和安装方式。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤、预期结果与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 脱敏错误码或匿名复现
+      description: 不上传完整日志，先移除秘密、私人名称及路径。

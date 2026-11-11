@@ -1,0 +1,247 @@
+.settings-workspace {
+  display: grid;
+  grid-template-columns: 176px minmax(0, 760px);
+  gap: 32px;
+  align-items: start;
+  max-width: 1024px;
+  margin-inline: auto;
+}
+.settings-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 80px;
+}
+.settings-navigation .ant-btn {
+  text-align: left;
+  justify-content: flex-start;
+  height: 40px;
+}
+.settings-navigation .selected {
+  background: var(--settings-active);
+  font-weight: 600;
+}
+.settings-mobile-navigation {
+  display: none;
+}
+.settings-content {
+  min-width: 0;
+}
+.settings-group {
+  padding: 16px 0 24px;
+  border-bottom: 1px solid var(--settings-border);
+  margin-bottom: 16px;
+  scroll-margin-top: 80px;
+}
+.settings-group h2 {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+.settings-muted {
+  color: var(--settings-muted);
+  font-size: 12px;
+}
+.settings-section-actions {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 32px;
+}
+.settings-content .settings-form,
+.settings-content .settings-group form {
+  max-width: 640px;
+}
+.settings-content .security-card {
+  margin: 0;
+  padding: 16px 0;
+  max-width: 640px;
+  border: 0;
+  background: transparent;
+}
+.settings-content .security-card h2 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+.settings-content .security-card .primary {
+  width: auto;
+  min-width: 144px;
+}
+.settings-value {
+  overflow-wrap: anywhere;
+}
+.enhancement-row {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--settings-border);
+  scroll-margin-top: 80px;
+}
+.enhancement-heading {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+.enhancement-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.enhancement-heading p {
+  margin: 4px 0 8px;
+  color: var(--settings-muted);
+  line-height: 1.5;
+}
+.enhancement-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.enhancement-details {
+  padding-top: 16px;
+  max-width: 640px;
+}
+.enhancement-details p {
+  margin: 0 0 12px;
+}
+.enhancement-details details {
+  margin-top: 16px;
+  color: var(--settings-muted);
+  font-size: 12px;
+}
+.enhancement-details summary {
+  cursor: pointer;
+}
+.enhancement-details .ant-descriptions {
+  margin-bottom: 16px;
+}
+.enhancement-status {
+  font-size: 12px;
+}
+.enhancement-result {
+  margin-top: 16px;
+}
+.gallery-highlight-config h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+.gallery-highlight-config > .ant-alert {
+  margin-bottom: 16px;
+}
+.gallery-once {
+  margin-block: 16px;
+  padding-block: 16px;
+  border-block: 1px solid var(--settings-border);
+}
+.gallery-once textarea {
+  margin-bottom: 12px;
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+.gallery-install {
+  margin-block: 16px 24px;
+}
+.gallery-connections ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.gallery-connections > ul > li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--settings-border);
+}
+.gallery-connections > ul > li > div {
+  min-width: 0;
+}
+.gallery-connections > ul > li p {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.gallery-connection-heading,
+.gallery-connection-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.gallery-connection-pager {
+  margin-top: 16px;
+}
+@media (max-width: 760px) {
+  .settings-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .settings-navigation {
+    display: none;
+  }
+  .settings-mobile-navigation {
+    display: flex;
+    width: 100%;
+  }
+  .enhancement-heading {
+    gap: 12px;
+  }
+  .enhancement-controls {
+    gap: 4px;
+  }
+  .enhancement-heading .ant-tag {
+    margin: 0;
+  }
+}
+
+.settings-credential-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.settings-credential-groups fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.settings-credential-groups legend {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+@media (max-width: 760px) {
+  .settings-credential-groups {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .settings-group,
+  .enhancement-row {
+    scroll-margin-top: 72px;
+  }
+}
+.accounts-settings {
+  margin-top: 32px;
+}
+.accounts-settings h2 {
+  font-size: 16px;
+  margin: 0;
+}
+.account-grant {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 0;
+}
+.account-grant .ant-select {
+  min-width: 120px;
+}
+
+.accounts-settings > .settings-section-actions {
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}

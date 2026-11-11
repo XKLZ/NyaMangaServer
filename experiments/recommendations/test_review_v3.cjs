@@ -1,0 +1,17 @@
+const assert = require('node:assert/strict');
+const {validateDocument, completeDocument, batchPairs} = require('./review_v2.js');
+const data={pack_id:'anonymous-v2',pairs:Array.from({length:300},(_,i)=>({pair_id:'pair-'+i,batch:Math.floor(i/30)+1}))};
+const state=Object.fromEntries(data.pairs.slice(0,30).map(p=>[p.pair_id,{label:'same_work',reason:'anonymous',collection_or_partial_overlap:false}]));
+const again=completeDocument(data,state);
+const small={pack_id:'anonymous-v3',pairs:data.pairs.slice(0,120)};
+const firstBatch=completeDocument(small,state);
+assert.equal(firstBatch.annotations.length,120);
+const smallState=Object.fromEntries(validateDocument(small,firstBatch).annotations.map(a=>[a.pair_id,a]));
+smallState['pair-90']={label:'same_series',reason:'anonymous',collection_or_partial_overlap:true};
+const all120=validateDocument(small,completeDocument(small,smallState));
+assert.equal(all120.annotations.length,120);
+assert.equal(all120.annotations.filter(a=>a.label).length,31);
+assert.equal(batchPairs(small,4,true,smallState).length,29);
+assert.equal(all120.annotations[0].label,'same_work');
+assert.throws(()=>validateDocument(small,again));
+console.log('complete 120-row export/import and four-batch resume: PASS');

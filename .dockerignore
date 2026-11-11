@@ -1,0 +1,16 @@
+.git
+.runtime
+.agents
+.codex
+**/node_modules
+internal/webassets/dist
+experiments
+docs
+.DS_Store
+*.log
+*.sqlite*
+*.db*
+.env*
+secrets
+credentials
+backups

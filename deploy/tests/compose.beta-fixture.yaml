@@ -1,0 +1,28 @@
+# Test-only override. No ports exposed; fixture never forwards outbound traffic.
+services:
+  server:
+    environment:
+      SSL_CERT_FILE: /run/beta-ca/ca.pem
+    volumes:
+      - type: bind
+        source: ${NYAMANGA_BETA_DIR}/fixture-ca/ca.pem
+        target: /run/beta-ca/ca.pem
+        read_only: true
+  provider-fixture:
+    image: ${NYAMANGA_IMAGE:?exact delivered image}
+    platform: linux/amd64
+    entrypoint: ["/usr/local/bin/python", "/fixture/beta-provider.py"]
+    command: ["--certificate", "/fixture/tls/server.pem", "--key", "/fixture/tls/server.key"]
+    user: "65532:65532"
+    cpus: 0.25
+    mem_limit: 64m
+    memswap_limit: 64m
+    read_only: true
+    healthcheck:
+      disable: true
+    volumes:
+      - ${NYAMANGA_BETA_DIR}/fixture-ca:/fixture/tls:ro
+      - ${NYAMANGA_BETA_DIR}/beta-provider.py:/fixture/beta-provider.py:ro
+    logging:
+      driver: json-file
+      options: {max-size: "1m", max-file: "1"}

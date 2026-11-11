@@ -1,0 +1,51 @@
+# Local runtime, private data, secrets and generated backups
+/.runtime/
+/.data/
+/.cache/
+/.tmp/
+/.verification/
+/.env
+/.env.*
+!/.env.example
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+*.db-wal
+*.db-shm
+*.nyaehbackup/
+*.nyaehbackup
+/credentials/
+/secrets/
+/backups/
+/migration-inputs/
+/migration-output/
+*.log
+
+# Generated build and tool output
+/bin/
+/dist/
+/coverage/
+/web/node_modules/
+/experiments/**/node_modules/
+/web/dist/
+/web/coverage/
+/web/playwright-report/
+/web/test-results/
+*.test
+coverage.out
+
+# Local editor and OS state
+.DS_Store
+.idea/
+.vscode/
+
+# Generated embedded frontend assets
+/internal/webassets/dist/
+
+# Python interpreter output
+__pycache__/
+*.py[cod]

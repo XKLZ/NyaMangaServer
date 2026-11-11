@@ -1,0 +1,858 @@
+{
+  "checked_at": "2026-11-03T09:45:03.752053+00:00",
+  "python": "3.12.0",
+  "source_lock_sha256": "fdc8c1642d8e07ec9a3339d4c34e4b21212e13586ae0795b87d6fa444914a686",
+  "platforms": {
+    "amd64": {
+      "status": "verified",
+      "wheels": [
+        {
+          "package": "certifi==2026.7.22",
+          "filename": "certifi-2026.7.22-py3-none-any.whl",
+          "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+          "bytes": 136983,
+          "source": "https://pypi.org/pypi/certifi/2026.7.22/json",
+          "url": "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "charset-normalizer==3.5.2",
+          "filename": "charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "3d31298449090ab8d47b7b1b2a555ff73cac7ed438a08b7ac160980c7ebed649",
+          "bytes": 257601,
+          "source": "https://pypi.org/pypi/charset-normalizer/3.5.2/json",
+          "url": "https://files.pythonhosted.org/packages/7f/c5/38806a25ab5e65fc178f39affeda20858efafede2fce1ffc2556cfc9fe73/charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libpthread.so.0"
+            ],
+            "provided": [
+              "cd.cpython-312-x86_64-linux-gnu.so",
+              "md.cpython-312-x86_64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "coloredlogs==15.0.1",
+          "filename": "coloredlogs-15.0.1-py2.py3-none-any.whl",
+          "sha256": "612ee75c546f53e92e70049c9dbfcc18c935a2b9a53b66085ce9ef6a6e5c0934",
+          "bytes": 46018,
+          "source": "https://pypi.org/pypi/coloredlogs/15.0.1/json",
+          "url": "https://files.pythonhosted.org/packages/a7/06/3d6badcf13db419e25b07041d9c7b4a2c331d3f4e7134445ec5df57714cd/coloredlogs-15.0.1-py2.py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "filelock==4.2.0",
+          "filename": "filelock-4.2.0-py3-none-any.whl",
+          "sha256": "2ff5690882e8cdb00ef31fb3d01a3094c29f30985426c59495afb1733f3b7238",
+          "bytes": 135032,
+          "source": "https://pypi.org/pypi/filelock/4.2.0/json",
+          "url": "https://files.pythonhosted.org/packages/8e/a3/9bc26acff301fe1aaea1cc3d82a1d57e0a34df3e1cadbfa91ac2dbcdde5c/filelock-4.2.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "flatbuffers==25.12.19",
+          "filename": "flatbuffers-25.12.19-py2.py3-none-any.whl",
+          "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+          "bytes": 26661,
+          "source": "https://pypi.org/pypi/flatbuffers/25.12.19/json",
+          "url": "https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "fsspec==2026.9.0",
+          "filename": "fsspec-2026.9.0-py3-none-any.whl",
+          "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "bytes": 221738,
+          "source": "https://pypi.org/pypi/fsspec/2026.9.0/json",
+          "url": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "hf-xet==1.7.0",
+          "filename": "hf_xet-1.7.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "sha256": "2814a6e999d13464c4d679b788cc5d784eb5a4edfc638a31f10e9a11ab531ef8",
+          "bytes": 4212180,
+          "source": "https://pypi.org/pypi/hf-xet/1.7.0/json",
+          "url": "https://files.pythonhosted.org/packages/a3/4c/2bf3b66c215d409655f28de1622393dde04c9461280d48c7924bb3b2decd/hf_xet-1.7.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-x86-64.so.2",
+              "libc.so.6",
+              "libdl.so.2",
+              "libgcc_s.so.1",
+              "libm.so.6",
+              "libpthread.so.0",
+              "librt.so.1"
+            ],
+            "provided": [
+              "hf_xet.abi3.so"
+            ]
+          }
+        },
+        {
+          "package": "huggingface-hub==0.36.2",
+          "filename": "huggingface_hub-0.36.2-py3-none-any.whl",
+          "sha256": "48f0c8eac16145dfce371e9d2d7772854a4f591bcb56c9cf548accf531d54270",
+          "bytes": 566395,
+          "source": "https://pypi.org/pypi/huggingface-hub/0.36.2/json",
+          "url": "https://files.pythonhosted.org/packages/a8/af/48ac8483240de756d2438c380746e7130d1c6f75802ef22f3c6d49982787/huggingface_hub-0.36.2-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "humanfriendly==10.0",
+          "filename": "humanfriendly-10.0-py2.py3-none-any.whl",
+          "sha256": "1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477",
+          "bytes": 86794,
+          "source": "https://pypi.org/pypi/humanfriendly/10.0/json",
+          "url": "https://files.pythonhosted.org/packages/f0/0f/310fb31e39e2d734ccaa2c0fb981ee41f7bd5056ce9bc29b2248bd569169/humanfriendly-10.0-py2.py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "idna==3.20",
+          "filename": "idna-3.20-py3-none-any.whl",
+          "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+          "bytes": 69583,
+          "source": "https://pypi.org/pypi/idna/3.20/json",
+          "url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "mpmath==1.3.0",
+          "filename": "mpmath-1.3.0-py3-none-any.whl",
+          "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "bytes": 536198,
+          "source": "https://pypi.org/pypi/mpmath/1.3.0/json",
+          "url": "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "numpy==2.2.6",
+          "filename": "numpy-2.2.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "fd83c01228a688733f1ded5201c678f0c53ecc1006ffbc404db9f7a899ac6249",
+          "bytes": 16527618,
+          "source": "https://pypi.org/pypi/numpy/2.2.6/json",
+          "url": "https://files.pythonhosted.org/packages/8c/3d/1e1db36cfd41f895d266b103df00ca5b3cbe965184df824dec5c08c6b803/numpy-2.2.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-x86-64.so.2",
+              "libc.so.6",
+              "libgcc_s.so.1",
+              "libgfortran-040039e1-0352e75f.so.5.0.0",
+              "libm.so.6",
+              "libpthread.so.0",
+              "libquadmath-96973f99-934c22de.so.0.0.0",
+              "libscipy_openblas64_-56d6093b.so",
+              "libstdc++.so.6",
+              "libz.so.1"
+            ],
+            "provided": [
+              "_bounded_integers.cpython-312-x86_64-linux-gnu.so",
+              "_common.cpython-312-x86_64-linux-gnu.so",
+              "_generator.cpython-312-x86_64-linux-gnu.so",
+              "_mt19937.cpython-312-x86_64-linux-gnu.so",
+              "_multiarray_tests.cpython-312-x86_64-linux-gnu.so",
+              "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+              "_operand_flag_tests.cpython-312-x86_64-linux-gnu.so",
+              "_pcg64.cpython-312-x86_64-linux-gnu.so",
+              "_philox.cpython-312-x86_64-linux-gnu.so",
+              "_pocketfft_umath.cpython-312-x86_64-linux-gnu.so",
+              "_rational_tests.cpython-312-x86_64-linux-gnu.so",
+              "_sfc64.cpython-312-x86_64-linux-gnu.so",
+              "_simd.cpython-312-x86_64-linux-gnu.so",
+              "_struct_ufunc_tests.cpython-312-x86_64-linux-gnu.so",
+              "_umath_linalg.cpython-312-x86_64-linux-gnu.so",
+              "_umath_tests.cpython-312-x86_64-linux-gnu.so",
+              "bit_generator.cpython-312-x86_64-linux-gnu.so",
+              "lapack_lite.cpython-312-x86_64-linux-gnu.so",
+              "libgfortran-040039e1-0352e75f.so.5.0.0",
+              "libquadmath-96973f99-934c22de.so.0.0.0",
+              "libscipy_openblas64_-56d6093b.so",
+              "mtrand.cpython-312-x86_64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "onnxruntime==1.22.1",
+          "filename": "onnxruntime-1.22.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "2d39a530aff1ec8d02e365f35e503193991417788641b184f5b1e8c9a6d5ce8d",
+          "bytes": 16475713,
+          "source": "https://pypi.org/pypi/onnxruntime/1.22.1/json",
+          "url": "https://files.pythonhosted.org/packages/0a/50/519828a5292a6ccd8d5cd6d2f72c6b36ea528a2ef68eca69647732539ffa/onnxruntime-1.22.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-x86-64.so.2",
+              "libc.so.6",
+              "libdl.so.2",
+              "libgcc_s.so.1",
+              "libm.so.6",
+              "libpthread.so.0",
+              "librt.so.1",
+              "libstdc++.so.6"
+            ],
+            "provided": [
+              "libonnxruntime.so.1.22.1",
+              "libonnxruntime_providers_shared.so",
+              "onnxruntime_pybind11_state.cpython-312-x86_64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "packaging==26.3",
+          "filename": "packaging-26.3-py3-none-any.whl",
+          "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+          "bytes": 129956,
+          "source": "https://pypi.org/pypi/packaging/26.3/json",
+          "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "pillow==11.3.0",
+          "filename": "pillow-11.3.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "sha256": "67172f2944ebba3d4a7b54f2e95c786a3a50c21b88456329314caaa28cda70f6",
+          "bytes": 7644652,
+          "source": "https://pypi.org/pypi/pillow/11.3.0/json",
+          "url": "https://files.pythonhosted.org/packages/8d/33/e9200d2bd7ba00dc3ddb78df1198a6e80d7669cce6c2bdbeb2530a74ec58/pillow-11.3.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-x86-64.so.2",
+              "libXau-00ec42fe.so.6.0.0",
+              "libavif-4aef22a8.so.16.3.0",
+              "libbrotlicommon-c43ca8d5.so.1.1.0",
+              "libbrotlidec-38f4425f.so.1.1.0",
+              "libc.so.6",
+              "libdl.so.2",
+              "libfreetype-c9382fe8.so.6.20.2",
+              "libgcc_s.so.1",
+              "libharfbuzz-02ae796b.so.0.61121.0",
+              "libjpeg-6e67f610.so.62.4.0",
+              "liblcms2-930c9228.so.2.0.17",
+              "liblzma-ea98dcb5.so.5.8.1",
+              "libm.so.6",
+              "libopenjp2-fa27e022.so.2.5.3",
+              "libpng16-6ce5641f.so.16.49.0",
+              "libpthread.so.0",
+              "libsharpyuv-75d713fb.so.0.1.1",
+              "libstdc++.so.6",
+              "libtiff-0709261b.so.6.1.0",
+              "libwebp-336eae84.so.7.1.10",
+              "libwebpdemux-13fe2141.so.2.0.16",
+              "libwebpmux-4372eeb8.so.3.1.1",
+              "libxcb-46a603a8.so.1.1.0",
+              "libz.so.1"
+            ],
+            "provided": [
+              "_avif.cpython-312-x86_64-linux-gnu.so",
+              "_imaging.cpython-312-x86_64-linux-gnu.so",
+              "_imagingcms.cpython-312-x86_64-linux-gnu.so",
+              "_imagingft.cpython-312-x86_64-linux-gnu.so",
+              "_imagingmath.cpython-312-x86_64-linux-gnu.so",
+              "_imagingmorph.cpython-312-x86_64-linux-gnu.so",
+              "_imagingtk.cpython-312-x86_64-linux-gnu.so",
+              "_webp.cpython-312-x86_64-linux-gnu.so",
+              "libXau-00ec42fe.so.6.0.0",
+              "libavif-4aef22a8.so.16.3.0",
+              "libbrotlicommon-c43ca8d5.so.1.1.0",
+              "libbrotlidec-38f4425f.so.1.1.0",
+              "libfreetype-c9382fe8.so.6.20.2",
+              "libharfbuzz-02ae796b.so.0.61121.0",
+              "libjpeg-6e67f610.so.62.4.0",
+              "liblcms2-930c9228.so.2.0.17",
+              "liblzma-ea98dcb5.so.5.8.1",
+              "libopenjp2-fa27e022.so.2.5.3",
+              "libpng16-6ce5641f.so.16.49.0",
+              "libsharpyuv-75d713fb.so.0.1.1",
+              "libtiff-0709261b.so.6.1.0",
+              "libwebp-336eae84.so.7.1.10",
+              "libwebpdemux-13fe2141.so.2.0.16",
+              "libwebpmux-4372eeb8.so.3.1.1",
+              "libxcb-46a603a8.so.1.1.0"
+            ]
+          }
+        },
+        {
+          "package": "protobuf==7.36.2",
+          "filename": "protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl",
+          "sha256": "89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2",
+          "bytes": 343223,
+          "source": "https://pypi.org/pypi/protobuf/7.36.2/json",
+          "url": "https://files.pythonhosted.org/packages/db/f3/3996583dd2906297a637af12114deddf7658af6e683fedb83be061983fb5/protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libm.so.6",
+              "libstdc++.so.6"
+            ],
+            "provided": [
+              "_message.abi3.so"
+            ]
+          }
+        },
+        {
+          "package": "pyyaml==6.0.3",
+          "filename": "pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "sha256": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc",
+          "bytes": 807870,
+          "source": "https://pypi.org/pypi/pyyaml/6.0.3/json",
+          "url": "https://files.pythonhosted.org/packages/8b/9d/b3589d3877982d4f2329302ef98a8026e7f4443c765c46cfecc8858c6b4b/pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libpthread.so.0"
+            ],
+            "provided": [
+              "_yaml.cpython-312-x86_64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "requests==2.34.2",
+          "filename": "requests-2.34.2-py3-none-any.whl",
+          "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+          "bytes": 73075,
+          "source": "https://pypi.org/pypi/requests/2.34.2/json",
+          "url": "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "sympy==1.14.0",
+          "filename": "sympy-1.14.0-py3-none-any.whl",
+          "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+          "bytes": 6299353,
+          "source": "https://pypi.org/pypi/sympy/1.14.0/json",
+          "url": "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "tokenizers==0.21.4",
+          "filename": "tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "51b7eabb104f46c1c50b486520555715457ae833d5aee9ff6ae853d1130506ff",
+          "bytes": 3115426,
+          "source": "https://pypi.org/pypi/tokenizers/0.21.4/json",
+          "url": "https://files.pythonhosted.org/packages/f2/90/273b6c7ec78af547694eddeea9e05de771278bd20476525ab930cecaf7d8/tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-x86-64.so.2",
+              "libc.so.6",
+              "libdl.so.2",
+              "libgcc_s.so.1",
+              "libm.so.6",
+              "libpthread.so.0",
+              "librt.so.1",
+              "libstdc++.so.6"
+            ],
+            "provided": [
+              "tokenizers.abi3.so"
+            ]
+          }
+        },
+        {
+          "package": "tqdm==4.70.1",
+          "filename": "tqdm-4.70.1-py3-none-any.whl",
+          "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+          "bytes": 80199,
+          "source": "https://pypi.org/pypi/tqdm/4.70.1/json",
+          "url": "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "typing-extensions==4.16.0",
+          "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "bytes": 45571,
+          "source": "https://pypi.org/pypi/typing-extensions/4.16.0/json",
+          "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "urllib3==2.8.0",
+          "filename": "urllib3-2.8.0-py3-none-any.whl",
+          "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+          "bytes": 135717,
+          "source": "https://pypi.org/pypi/urllib3/2.8.0/json",
+          "url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        }
+      ],
+      "blockers": []
+    },
+    "arm64": {
+      "status": "verified",
+      "wheels": [
+        {
+          "package": "certifi==2026.7.22",
+          "filename": "certifi-2026.7.22-py3-none-any.whl",
+          "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+          "bytes": 136983,
+          "source": "https://pypi.org/pypi/certifi/2026.7.22/json",
+          "url": "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "charset-normalizer==3.5.2",
+          "filename": "charset_normalizer-3.5.2-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "b91363207bd9dc966a691e959bb47f64b30f7ac4b072be9968b366982f7db77c",
+          "bytes": 246730,
+          "source": "https://pypi.org/pypi/charset-normalizer/3.5.2/json",
+          "url": "https://files.pythonhosted.org/packages/c9/87/2fea8c13dc24b3ca9c6f803a5b2dfdeae73eb4f9e12c7885ed908ff0433c/charset_normalizer-3.5.2-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libpthread.so.0"
+            ],
+            "provided": [
+              "cd.cpython-312-aarch64-linux-gnu.so",
+              "md.cpython-312-aarch64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "coloredlogs==15.0.1",
+          "filename": "coloredlogs-15.0.1-py2.py3-none-any.whl",
+          "sha256": "612ee75c546f53e92e70049c9dbfcc18c935a2b9a53b66085ce9ef6a6e5c0934",
+          "bytes": 46018,
+          "source": "https://pypi.org/pypi/coloredlogs/15.0.1/json",
+          "url": "https://files.pythonhosted.org/packages/a7/06/3d6badcf13db419e25b07041d9c7b4a2c331d3f4e7134445ec5df57714cd/coloredlogs-15.0.1-py2.py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "filelock==4.2.0",
+          "filename": "filelock-4.2.0-py3-none-any.whl",
+          "sha256": "2ff5690882e8cdb00ef31fb3d01a3094c29f30985426c59495afb1733f3b7238",
+          "bytes": 135032,
+          "source": "https://pypi.org/pypi/filelock/4.2.0/json",
+          "url": "https://files.pythonhosted.org/packages/8e/a3/9bc26acff301fe1aaea1cc3d82a1d57e0a34df3e1cadbfa91ac2dbcdde5c/filelock-4.2.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "flatbuffers==25.12.19",
+          "filename": "flatbuffers-25.12.19-py2.py3-none-any.whl",
+          "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+          "bytes": 26661,
+          "source": "https://pypi.org/pypi/flatbuffers/25.12.19/json",
+          "url": "https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "fsspec==2026.9.0",
+          "filename": "fsspec-2026.9.0-py3-none-any.whl",
+          "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "bytes": 221738,
+          "source": "https://pypi.org/pypi/fsspec/2026.9.0/json",
+          "url": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "hf-xet==1.7.0",
+          "filename": "hf_xet-1.7.0-cp38-abi3-manylinux_2_28_aarch64.whl",
+          "sha256": "fcfd6c22418e57dd5b3aea649e813b2e2cfb2aebf317b210d90f1fe4b3018b52",
+          "bytes": 3990011,
+          "source": "https://pypi.org/pypi/hf-xet/1.7.0/json",
+          "url": "https://files.pythonhosted.org/packages/49/0c/a2f703a5a78267556e89e03316fa0805c86b72b50829bc67665746e8ebf0/hf_xet-1.7.0-cp38-abi3-manylinux_2_28_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libdl.so.2",
+              "libgcc_s.so.1",
+              "libm.so.6",
+              "libpthread.so.0"
+            ],
+            "provided": [
+              "hf_xet.abi3.so"
+            ]
+          }
+        },
+        {
+          "package": "huggingface-hub==0.36.2",
+          "filename": "huggingface_hub-0.36.2-py3-none-any.whl",
+          "sha256": "48f0c8eac16145dfce371e9d2d7772854a4f591bcb56c9cf548accf531d54270",
+          "bytes": 566395,
+          "source": "https://pypi.org/pypi/huggingface-hub/0.36.2/json",
+          "url": "https://files.pythonhosted.org/packages/a8/af/48ac8483240de756d2438c380746e7130d1c6f75802ef22f3c6d49982787/huggingface_hub-0.36.2-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "humanfriendly==10.0",
+          "filename": "humanfriendly-10.0-py2.py3-none-any.whl",
+          "sha256": "1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477",
+          "bytes": 86794,
+          "source": "https://pypi.org/pypi/humanfriendly/10.0/json",
+          "url": "https://files.pythonhosted.org/packages/f0/0f/310fb31e39e2d734ccaa2c0fb981ee41f7bd5056ce9bc29b2248bd569169/humanfriendly-10.0-py2.py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "idna==3.20",
+          "filename": "idna-3.20-py3-none-any.whl",
+          "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+          "bytes": 69583,
+          "source": "https://pypi.org/pypi/idna/3.20/json",
+          "url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "mpmath==1.3.0",
+          "filename": "mpmath-1.3.0-py3-none-any.whl",
+          "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "bytes": 536198,
+          "source": "https://pypi.org/pypi/mpmath/1.3.0/json",
+          "url": "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "numpy==2.2.6",
+          "filename": "numpy-2.2.6-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+          "sha256": "f2618db89be1b4e05f7a1a847a9c1c0abd63e63a1607d892dd54668dd92faf87",
+          "bytes": 14018462,
+          "source": "https://pypi.org/pypi/numpy/2.2.6/json",
+          "url": "https://files.pythonhosted.org/packages/f8/35/8c80729f1ff76b3921d5c9487c7ac3de9b2a103b1cd05e905b3090513510/numpy-2.2.6-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-aarch64.so.1",
+              "libc.so.6",
+              "libgcc_s.so.1",
+              "libgfortran-daac5196-038a5e3c.so.5.0.0",
+              "libm.so.6",
+              "libpthread.so.0",
+              "libscipy_openblas64_-128b20d9.so",
+              "libstdc++.so.6",
+              "libz.so.1"
+            ],
+            "provided": [
+              "_bounded_integers.cpython-312-aarch64-linux-gnu.so",
+              "_common.cpython-312-aarch64-linux-gnu.so",
+              "_generator.cpython-312-aarch64-linux-gnu.so",
+              "_mt19937.cpython-312-aarch64-linux-gnu.so",
+              "_multiarray_tests.cpython-312-aarch64-linux-gnu.so",
+              "_multiarray_umath.cpython-312-aarch64-linux-gnu.so",
+              "_operand_flag_tests.cpython-312-aarch64-linux-gnu.so",
+              "_pcg64.cpython-312-aarch64-linux-gnu.so",
+              "_philox.cpython-312-aarch64-linux-gnu.so",
+              "_pocketfft_umath.cpython-312-aarch64-linux-gnu.so",
+              "_rational_tests.cpython-312-aarch64-linux-gnu.so",
+              "_sfc64.cpython-312-aarch64-linux-gnu.so",
+              "_simd.cpython-312-aarch64-linux-gnu.so",
+              "_struct_ufunc_tests.cpython-312-aarch64-linux-gnu.so",
+              "_umath_linalg.cpython-312-aarch64-linux-gnu.so",
+              "_umath_tests.cpython-312-aarch64-linux-gnu.so",
+              "bit_generator.cpython-312-aarch64-linux-gnu.so",
+              "lapack_lite.cpython-312-aarch64-linux-gnu.so",
+              "libgfortran-daac5196-038a5e3c.so.5.0.0",
+              "libscipy_openblas64_-128b20d9.so",
+              "mtrand.cpython-312-aarch64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "onnxruntime==1.22.1",
+          "filename": "onnxruntime-1.22.1-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "984cea2a02fcc5dfea44ade9aca9fe0f7a8a2cd6f77c258fc4388238618f3928",
+          "bytes": 14473861,
+          "source": "https://pypi.org/pypi/onnxruntime/1.22.1/json",
+          "url": "https://files.pythonhosted.org/packages/29/e5/00b099b4d4f6223b610421080d0eed9327ef9986785c9141819bbba0d396/onnxruntime-1.22.1-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-aarch64.so.1",
+              "libc.so.6",
+              "libdl.so.2",
+              "libgcc_s.so.1",
+              "libm.so.6",
+              "libpthread.so.0",
+              "librt.so.1",
+              "libstdc++.so.6"
+            ],
+            "provided": [
+              "libonnxruntime.so.1.22.1",
+              "libonnxruntime_providers_shared.so",
+              "onnxruntime_pybind11_state.cpython-312-aarch64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "packaging==26.3",
+          "filename": "packaging-26.3-py3-none-any.whl",
+          "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+          "bytes": 129956,
+          "source": "https://pypi.org/pypi/packaging/26.3/json",
+          "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "pillow==11.3.0",
+          "filename": "pillow-11.3.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+          "sha256": "eb76541cba2f958032d79d143b98a3a6b3ea87f0959bbe256c0b5e416599fd5d",
+          "bytes": 5871726,
+          "source": "https://pypi.org/pypi/pillow/11.3.0/json",
+          "url": "https://files.pythonhosted.org/packages/8e/1e/b9e12bbe6e4c2220effebc09ea0923a07a6da1e1f1bfbc8d7d29a01ce32b/pillow-11.3.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "ld-linux-aarch64.so.1",
+              "libXau-21870672.so.6.0.0",
+              "libavif-74079502.so.16.3.0",
+              "libbrotlicommon-526214ec.so.1.1.0",
+              "libbrotlidec-3cb38c22.so.1.1.0",
+              "libc.so.6",
+              "libdl.so.2",
+              "libfreetype-741d18da.so.6.20.2",
+              "libgcc_s.so.1",
+              "libharfbuzz-8f2054f9.so.0.61121.0",
+              "libjpeg-2b856687.so.62.4.0",
+              "liblcms2-b1c7dd15.so.2.0.17",
+              "liblzma-6234d9cb.so.5.8.1",
+              "libm.so.6",
+              "libopenjp2-cf1cd0dc.so.2.5.3",
+              "libpng16-21b91df3.so.16.49.0",
+              "libpthread.so.0",
+              "libsharpyuv-0d6d0d55.so.0.1.1",
+              "libstdc++.so.6",
+              "libtiff-89906260.so.6.1.0",
+              "libwebp-12d09afa.so.7.1.10",
+              "libwebpdemux-fd472f19.so.2.0.16",
+              "libwebpmux-14d4aeaa.so.3.1.1",
+              "libxcb-c830e669.so.1.1.0",
+              "libz.so.1"
+            ],
+            "provided": [
+              "_avif.cpython-312-aarch64-linux-gnu.so",
+              "_imaging.cpython-312-aarch64-linux-gnu.so",
+              "_imagingcms.cpython-312-aarch64-linux-gnu.so",
+              "_imagingft.cpython-312-aarch64-linux-gnu.so",
+              "_imagingmath.cpython-312-aarch64-linux-gnu.so",
+              "_imagingmorph.cpython-312-aarch64-linux-gnu.so",
+              "_imagingtk.cpython-312-aarch64-linux-gnu.so",
+              "_webp.cpython-312-aarch64-linux-gnu.so",
+              "libXau-21870672.so.6.0.0",
+              "libavif-74079502.so.16.3.0",
+              "libbrotlicommon-526214ec.so.1.1.0",
+              "libbrotlidec-3cb38c22.so.1.1.0",
+              "libfreetype-741d18da.so.6.20.2",
+              "libharfbuzz-8f2054f9.so.0.61121.0",
+              "libjpeg-2b856687.so.62.4.0",
+              "liblcms2-b1c7dd15.so.2.0.17",
+              "liblzma-6234d9cb.so.5.8.1",
+              "libopenjp2-cf1cd0dc.so.2.5.3",
+              "libpng16-21b91df3.so.16.49.0",
+              "libsharpyuv-0d6d0d55.so.0.1.1",
+              "libtiff-89906260.so.6.1.0",
+              "libwebp-12d09afa.so.7.1.10",
+              "libwebpdemux-fd472f19.so.2.0.16",
+              "libwebpmux-14d4aeaa.so.3.1.1",
+              "libxcb-c830e669.so.1.1.0"
+            ]
+          }
+        },
+        {
+          "package": "protobuf==7.36.2",
+          "filename": "protobuf-7.36.2-cp310-abi3-manylinux2014_aarch64.whl",
+          "sha256": "e11e1f0180583a2af89db6a2ecd9e8dc40aa6d2988ca175bfd0e6d12ea72d74e",
+          "bytes": 344219,
+          "source": "https://pypi.org/pypi/protobuf/7.36.2/json",
+          "url": "https://files.pythonhosted.org/packages/b6/ea/91fdf7c2b8bbd49cde056f00a9df6773532987e1c00fe2830b895af95c7e/protobuf-7.36.2-cp310-abi3-manylinux2014_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libm.so.6",
+              "libstdc++.so.6"
+            ],
+            "provided": [
+              "_message.abi3.so"
+            ]
+          }
+        },
+        {
+          "package": "pyyaml==6.0.3",
+          "filename": "pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+          "sha256": "9149cad251584d5fb4981be1ecde53a1ca46c891a79788c0df828d2f166bda28",
+          "bytes": 775116,
+          "source": "https://pypi.org/pypi/pyyaml/6.0.3/json",
+          "url": "https://files.pythonhosted.org/packages/ed/23/7a778b6bd0b9a8039df8b1b1d80e2e2ad78aa04171592c8a5c43a56a6af4/pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libpthread.so.0"
+            ],
+            "provided": [
+              "_yaml.cpython-312-aarch64-linux-gnu.so"
+            ]
+          }
+        },
+        {
+          "package": "requests==2.34.2",
+          "filename": "requests-2.34.2-py3-none-any.whl",
+          "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+          "bytes": 73075,
+          "source": "https://pypi.org/pypi/requests/2.34.2/json",
+          "url": "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "sympy==1.14.0",
+          "filename": "sympy-1.14.0-py3-none-any.whl",
+          "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+          "bytes": 6299353,
+          "source": "https://pypi.org/pypi/sympy/1.14.0/json",
+          "url": "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "tokenizers==0.21.4",
+          "filename": "tokenizers-0.21.4-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+          "sha256": "39b376f5a1aee67b4d29032ee85511bbd1b99007ec735f7f35c8a2eb104eade5",
+          "bytes": 3012624,
+          "source": "https://pypi.org/pypi/tokenizers/0.21.4/json",
+          "url": "https://files.pythonhosted.org/packages/aa/8f/24f39d7b5c726b7b0be95dca04f344df278a3fe3a4deb15a975d194cbb32/tokenizers-0.21.4-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+          "native_dependencies": {
+            "needed": [
+              "libc.so.6",
+              "libdl.so.2",
+              "libgcc_s.so.1",
+              "libm.so.6",
+              "libpthread.so.0",
+              "libstdc++.so.6"
+            ],
+            "provided": [
+              "tokenizers.abi3.so"
+            ]
+          }
+        },
+        {
+          "package": "tqdm==4.70.1",
+          "filename": "tqdm-4.70.1-py3-none-any.whl",
+          "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+          "bytes": 80199,
+          "source": "https://pypi.org/pypi/tqdm/4.70.1/json",
+          "url": "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "typing-extensions==4.16.0",
+          "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "bytes": 45571,
+          "source": "https://pypi.org/pypi/typing-extensions/4.16.0/json",
+          "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        },
+        {
+          "package": "urllib3==2.8.0",
+          "filename": "urllib3-2.8.0-py3-none-any.whl",
+          "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+          "bytes": 135717,
+          "source": "https://pypi.org/pypi/urllib3/2.8.0/json",
+          "url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+          "native_dependencies": {
+            "needed": [],
+            "provided": []
+          }
+        }
+      ],
+      "blockers": []
+    }
+  },
+  "python_image": {
+    "status": "verified",
+    "image": "python:3.12.0-slim-bookworm@sha256:19a6235339a74eca01227b03629f63b6f5020abc21142436eced6ec3a9839a76",
+    "source": "https://raw.githubusercontent.com/docker-library/repo-info/3dae0ec5c55c6a52a67d7349e72bf6687d27a44d/repos/python/remote/3.12.0-slim-bookworm.md",
+    "source_sha256": "2855fe038abe8ec8d3bd4cf5f2debeeb0ac9d5ac8c1f9d4c66a11a43e1e9d187",
+    "method": "Docker official repo-info immutable archive; not a current tag lookup or image execution",
+    "platforms": {
+      "amd64": "sha256:8e216a21d8df597118b46f3fff477ed1c5c11be81531b6da87790a17851b7f1c",
+      "arm64": "sha256:be90aa1dbedbeee34dd3c4934a4f93a0227d4cf95a40196896c4c67750b21690"
+    },
+    "image_execution_verified": false,
+    "registry_attempt": {
+      "status": "blocked",
+      "reason": "official_download_failed:curl_28",
+      "source": "https://registry-1.docker.io/v2/library/python/manifests/3.12.0-slim-bookworm",
+      "meaning": "Official metadata could not be verified; no image digest is asserted."
+    }
+  },
+  "image_checked_at": "2026-11-03T10:16:11.809935+00:00"
+}

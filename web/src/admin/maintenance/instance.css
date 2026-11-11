@@ -1,0 +1,176 @@
+.instance-workspace {
+  min-width: 0;
+}
+.instance-toolbar,
+.instance-summary,
+.instance-hold,
+.instance-operation-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.instance-toolbar {
+  margin-bottom: 12px;
+}
+.instance-private,
+.instance-muted {
+  font-size: 12px;
+  opacity: 0.8;
+  line-height: 1.6;
+  max-width: 75ch;
+}
+.instance-private {
+  margin: 0 0 24px;
+}
+.instance-columns {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+.instance-columns > *,
+.instance-current {
+  min-width: 0;
+}
+.instance-operation-head h2 {
+  font-size: 16px;
+  margin: 0 8px 0 0;
+}
+.instance-operation-head > span:last-child {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.instance-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.instance-history-item.selected,
+.instance-history-item:hover {
+  border-color: currentColor;
+}
+.instance-history-item span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.instance-history-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.instance-pager {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+.instance-diagnostics {
+  margin: 12px 0 24px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.instance-hold,
+.instance-activation {
+  margin: 16px 0;
+}
+.instance-activation {
+  border-inline-start: 3px solid currentColor;
+  padding-inline-start: 16px;
+}
+.instance-restore {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+.instance-restore > .ant-btn {
+  align-self: flex-start;
+}
+.instance-restore .ant-steps {
+  margin-bottom: 8px;
+}
+.instance-mappings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.instance-mappings label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.instance-mappings .ant-select {
+  width: 100%;
+}
+.instance-restore .instance-muted {
+  margin: 0;
+}
+.instance-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.instance-preview > .ant-btn {
+  align-self: flex-end;
+}
+.instance-preview details {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.instance-transfer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.instance-transfer > .ant-progress {
+  flex: 1 1 240px;
+}
+.instance-current > .ant-empty {
+  padding: 48px 16px;
+}
+.instance-current > .ant-btn {
+  margin-inline-end: 8px;
+}
+@media (max-width: 760px) {
+  .instance-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .instance-mappings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .instance-restore .ant-steps {
+    max-width: 100%;
+  }
+  .instance-pager {
+    flex-wrap: wrap;
+  }
+  .instance-restore .ant-descriptions {
+    overflow-wrap: anywhere;
+  }
+  .instance-toolbar {
+    gap: 8px;
+  }
+}
+
+.instance-history > summary {
+  display: none;
+}
+@media (max-width: 760px) {
+  .instance-history > summary {
+    display: list-item;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+}

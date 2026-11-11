@@ -1,0 +1,44 @@
+# Public AMD64 release. configure.py copies this to a private installation directory.
+name: nyamangaserver
+services:
+  server:
+    image: ghcr.io/xklz/nyamangaserver:0.7.0-beta.1
+    platform: linux/amd64
+    cpus: 2
+    mem_limit: 2g
+    memswap_limit: 2g
+    ports:
+      - "${NYAMANGA_PORT:-9400}:9400"
+    volumes:
+      - app-data:/data
+      - provider-secrets:/secrets
+      - models:/models:ro
+      - type: bind
+        source: ${NYAMANGA_CONFIG_DIR:?run configure.py first}/server.json
+        target: /run/config/server.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${NYAMANGA_CONFIG_DIR:?run configure.py first}/setup-token
+        target: /run/secrets/setup_token
+        read_only: true
+        bind:
+          create_host_path: false
+    stop_grace_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "/server", "--healthcheck", "http://127.0.0.1:9400/api/v1/health/ready"]
+      interval: 10s
+      timeout: 4s
+      start_period: 30s
+      retries: 12
+volumes:
+  app-data:
+  provider-secrets:
+  models:

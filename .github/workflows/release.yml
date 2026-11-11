@@ -1,0 +1,63 @@
+name: Build and optionally publish beta
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish only after maintainer approval of this exact source'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  checks:
+    uses: ./.github/workflows/check.yml
+  image:
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Build exact native AMD64 image (no publishing)
+        run: |
+          VERSION=$(python3 scripts/check/release-version.py)
+          python3 scripts/check/public-tree.py --commit HEAD
+          python3 deploy/build-image.py -t "ghcr.io/xklz/nyamangaserver:$VERSION"
+      - name: Anonymous exact-image API and standard restore
+        run: |
+          VERSION=$(cat internal/buildinfo/VERSION)
+          sudo python3 deploy/tests/release-image.py --image "ghcr.io/xklz/nyamangaserver:$VERSION" --commit "$GITHUB_SHA" --directory "$PWD/.runtime/tests/release-image"
+      - name: Export the same tested image and installation bundle
+        run: python3 deploy/package-release.py --directory .runtime/release-artifacts
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tested-release
+          path: .runtime/release-artifacts/*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+  publish:
+    if: inputs.publish && github.ref == 'refs/heads/main' && github.repository == 'XKLZ/NyaMangaServer'
+    needs: image
+    runs-on: ubuntu-24.04
+    environment: release
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tested-release
+          path: .runtime/release-artifacts
+      - name: Verify and publish tested immutable beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 deploy/publish-release.py --directory .runtime/release-artifacts --commit "$GITHUB_SHA"

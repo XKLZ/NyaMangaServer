@@ -1,0 +1,33 @@
+.current-library-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.current-library-select {
+  width: clamp(160px, 18vw, 240px);
+}
+.current-library-header > .ant-tag {
+  margin-inline-end: 0;
+}
+@media (max-width: 760px) {
+  .current-library-select {
+    width: 100px;
+  }
+  .current-library-header > .anticon {
+    display: none;
+  }
+  .admin-header .ant-breadcrumb {
+    font-size: 12px;
+  }
+  .current-library-header .library-state-tag {
+    padding-inline: 4px;
+  }
+  .admin-header {
+    gap: 8px;
+  }
+}
+
+.library-scoped-content:not([hidden]) {
+  display: contents;
+}

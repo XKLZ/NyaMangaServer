@@ -1,0 +1,7 @@
+services:
+  server:
+    volumes:
+      - type: bind
+        source: ${NYAMANGA_LIBRARY_DIR:?set explicit library source directory}
+        target: /library/comics
+        read_only: true

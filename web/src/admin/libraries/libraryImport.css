@@ -1,0 +1,54 @@
+.library-import-page,
+.import-history-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.library-import-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.library-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.library-identity span {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+.library-import-page .ant-table-cell {
+  font-variant-numeric: tabular-nums;
+}
+.import-history-filter {
+  min-width: 160px;
+}
+.import-failure-notice {
+  flex-shrink: 0;
+}
+.import-refresh-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .library-import-toolbar {
+    gap: 8px;
+  }
+  .library-import-page,
+  .import-history-page {
+    gap: 12px;
+  }
+  .import-history-filter {
+    min-width: 140px;
+  }
+}

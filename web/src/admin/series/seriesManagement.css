@@ -1,0 +1,195 @@
+.series-cover-empty {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 66px;
+  background: #8881;
+  border-radius: 5px;
+  color: #888;
+}
+.series-position {
+  min-width: 18px;
+  color: var(--ant-color-text-secondary, #888);
+  font-size: 12px;
+  padding-top: 4px;
+}
+.series-management .version-candidate .ant-image {
+  flex-shrink: 0;
+}
+.series-management .version-candidate p {
+  margin: 6px 0;
+  color: var(--ant-color-text-secondary, #888);
+}
+.series-management .version-candidate .ant-space-item {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.series-management .version-member > .ant-space {
+  flex-shrink: 0;
+}
+@media (max-width: 500px) {
+  .series-management .version-member {
+    flex-wrap: wrap;
+  }
+  .series-management .version-member > .ant-space {
+    margin-left: auto;
+  }
+}
+.series-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 16px;
+}
+.series-title-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.series-title-row h4 {
+  margin: 0;
+  font-size: 18px;
+}
+.series-title-row .ant-input {
+  max-width: 520px;
+  text-align: center;
+}
+.series-name-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: inherit;
+  color: inherit;
+  cursor: text;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.series-member-row,
+.series-proposal-member {
+  align-items: center;
+}
+.series-member-row .series-position,
+.series-proposal-member .series-position {
+  padding-top: 0;
+}
+.series-member-actions {
+  align-self: center;
+}
+.series-drag-handle {
+  touch-action: none;
+  cursor: grab;
+  flex-shrink: 0;
+  color: var(--ant-color-text-tertiary);
+}
+.series-drag-handle:active {
+  cursor: grabbing;
+}
+.series-drag-source {
+  opacity: 0.5;
+}
+[data-series-drag-over="before"] {
+  box-shadow: 0 -2px var(--ant-color-primary);
+}
+[data-series-drag-over="after"] {
+  box-shadow: 0 2px var(--ant-color-primary);
+}
+.series-drop-zone {
+  min-height: 48px;
+}
+.series-drop-end {
+  display: none;
+  padding: 20px;
+  text-align: center;
+  color: var(--ant-color-text-secondary);
+  border: 1px dashed var(--ant-color-primary-border);
+  border-radius: 6px;
+}
+.series-drop-zone.is-dragging > .series-drop-end {
+  display: block;
+}
+.series-drag-ghost {
+  position: fixed;
+  z-index: 2000;
+  pointer-events: none;
+  max-width: 200px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--ant-color-bg-elevated);
+  color: var(--ant-color-text);
+  box-shadow: var(--ant-box-shadow);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.series-candidate-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.series-candidate-previews {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+.series-candidate-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.series-candidate > .ant-card-body > .ant-space {
+  margin-top: 10px;
+}
+.series-management .version-center-body:has(> .series-proposal) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.series-proposal {
+  height: 100%;
+  min-height: 0;
+}
+.series-proposal-heading {
+  flex-shrink: 0;
+  max-height: 45%;
+  overflow: auto;
+}
+.series-proposal-heading .version-section-heading {
+  margin-bottom: 10px;
+}
+.series-proposal .series-proposal-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.series-proposal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.series-management[data-layout="mobile"] .version-center:has(.series-proposal) {
+  height: 100%;
+  box-sizing: border-box;
+}
+.series-management[data-layout="mobile"] .series-proposal-actions {
+  position: static;
+}
+.series-management[data-layout="mobile"] .series-proposal-member,
+.series-management[data-layout="mobile"] .series-member-row {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+@media (max-width: 500px) {
+  .series-member-actions.ant-space {
+    flex-direction: column;
+    margin-left: 0 !important;
+  }
+}

@@ -1,0 +1,37 @@
+name: nyamangaserver
+services:
+  server:
+    image: nyamangaserver:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        COMMIT: ${NYAMANGA_BUILD_COMMIT:?set verified clean build identity}
+        PYTHON_IMAGE: "${NYAMANGA_PYTHON_IMAGE:-python:3.12.0-slim-bookworm@sha256:19a6235339a74eca01227b03629f63b6f5020abc21142436eced6ec3a9839a76}"
+    ports:
+      - "${NYAMANGA_PORT:-9400}:9400"
+    volumes:
+      - app-data:/data
+      - provider-secrets:/secrets
+      - models:/models:ro
+      - type: bind
+        source: ${NYAMANGA_CONFIG_FILE:?set absolute config file path}
+        target: /run/config/server.json
+        read_only: true
+    secrets:
+      - setup_token
+    stop_grace_period: 12s
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/server", "--healthcheck", "http://127.0.0.1:9400/api/v1/health/ready"]
+      interval: 5s
+      timeout: 4s
+      start_period: 5s
+      retries: 5
+volumes:
+  app-data:
+  provider-secrets:
+  models:
+secrets:
+  setup_token:
+    file: ${NYAMANGA_SETUP_TOKEN_FILE:?set absolute setup token file path}

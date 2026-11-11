@@ -1,0 +1,3 @@
+# Conversion validation only; not required by the deployed feature worker.
+onnx==1.18.0
+torch==2.7.1

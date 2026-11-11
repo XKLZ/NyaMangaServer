@@ -1,0 +1,42 @@
+{
+  "name": "nyamangaserver-web",
+  "version": "0.7.0-beta.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.19.0",
+    "npm": "11.17.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:pilot": "node ../scripts/dev/pilot-retired.mjs",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format:check": "prettier --check src tests *.mjs index.html package.json tsconfig.json",
+    "format": "prettier --write src tests *.mjs index.html package.json tsconfig.json",
+    "test:e2e": "playwright test",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "api:check": "redocly lint ../api/openapi.yaml --config ../api/.redocly.yaml"
+  },
+  "dependencies": {
+    "@ant-design/icons": "6.3.4",
+    "antd": "6.6.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router": "8.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@redocly/cli": "2.62.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "8.3.4"
+  }
+}

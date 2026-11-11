@@ -1,0 +1,25 @@
+{
+  "recorded_at": "2026-10-13",
+  "registry": "docker.io/library",
+  "golang": {
+    "tag": "1.27.0-bookworm",
+    "index_digest": "sha256:ded31c68586d2e49e760acc2e65a884b23d032e9bbbed0ae0c55abd3fcaf4452",
+    "linux_arm64_manifest": "sha256:4220c5d84f685eb34a728d389bab47674b46f433b5218ae9a75a5fbd5e0be724"
+  },
+  "node": {
+    "tag": "24.19.0-bookworm-slim",
+    "index_digest": "sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df",
+    "linux_arm64_manifest": "sha256:be8929e08ae137e81b5e1edba02259e6c4cb2f5ad655092bb9f56b97e41c4536"
+  },
+  "offline_verification": "crane v0.20.6 pulled official OCI blobs by platform; OCI content hashes were verified before transfer. Offline build arguments select the recorded ARM64 manifests; Dockerfile defaults use the multi-platform index digests.",
+  "python": {
+    "tag": "3.12.0-slim-bookworm",
+    "index_digest": "sha256:19a6235339a74eca01227b03629f63b6f5020abc21142436eced6ec3a9839a76",
+    "linux_amd64_manifest": "sha256:8e216a21d8df597118b46f3fff477ed1c5c11be81531b6da87790a17851b7f1c",
+    "linux_arm64_manifest": "sha256:be90aa1dbedbeee34dd3c4934a4f93a0227d4cf95a40196896c4c67750b21690",
+    "recorded_at": "2026-11-03",
+    "source": "https://raw.githubusercontent.com/docker-library/repo-info/3dae0ec5c55c6a52a67d7349e72bf6687d27a44d/repos/python/remote/3.12.0-slim-bookworm.md",
+    "source_sha256": "2855fe038abe8ec8d3bd4cf5f2debeeb0ac9d5ac8c1f9d4c66a11a43e1e9d187",
+    "verification": "Official immutable repo-info archive metadata, not registry tag freshness, image pull or execution."
+  }
+}

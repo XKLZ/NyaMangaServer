@@ -1,0 +1,14 @@
+{
+  "listen_addr": "0.0.0.0:9400",
+  "public_url": "http://localhost:9400",
+  "data_dir": "/data",
+  "setup_token_file": "/run/secrets/setup_token",
+  "provider_key_file": "/secrets/provider-key",
+  "provider_credentials_file": "/secrets/providers.enc",
+  "work_recommendations": {
+    "python": "/opt/runtime/bin/python",
+    "worker": "/opt/nyamanga/recommendations/worker.py",
+    "models_dir": "/models"
+  },
+  "library_roots": []
+}

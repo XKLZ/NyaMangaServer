@@ -1,0 +1,366 @@
+.admin-content.version-page-content {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.version-management {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.version-toolbar,
+.version-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.version-toolbar {
+  min-height: 32px;
+}
+.version-library {
+  width: 200px;
+  max-width: 100%;
+}
+.version-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+.version-column {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: var(--ant-color-bg-container);
+  border-radius: 6px;
+}
+.version-center {
+  padding: 12px 16px;
+}
+.version-left {
+  border-right: 1px solid var(--ant-color-border-secondary, #8882);
+}
+.version-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.version-scroll > .ant-spin-nested-loading,
+.version-scroll > .ant-spin-nested-loading > .ant-spin-container {
+  min-height: 100%;
+}
+.version-pager {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #8882;
+  justify-content: center;
+}
+.version-group-list,
+.version-member-list {
+  display: flex;
+  flex-direction: column;
+}
+.version-group-list {
+  gap: 4px;
+}
+.version-group-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.18s,
+    border-color 0.18s;
+}
+.version-group-row:hover,
+.version-group-row.selected {
+  background: var(--ant-color-primary-bg, #1677ff12);
+  border-color: var(--ant-color-primary-border, #1677ff66);
+}
+.version-group-row:focus-visible {
+  outline: 2px solid var(--ant-color-primary, #1677ff);
+  outline-offset: -2px;
+}
+.version-group-row > span {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.version-group-row .ant-image {
+  flex: 0 0 48px;
+  pointer-events: none;
+  width: 48px !important;
+  height: 66px !important;
+}
+.version-group-row .ant-image img {
+  width: 48px !important;
+  height: 66px !important;
+}
+.version-row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.45;
+  font-weight: 600;
+}
+.version-subtitle {
+  display: block;
+  color: var(--ant-color-text-secondary, #888);
+  font-size: 12px;
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+.version-cover {
+  object-fit: contain;
+  border-radius: 5px;
+}
+.version-member {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #8882;
+  transition: opacity 0.18s;
+}
+.version-member .ant-image {
+  flex-shrink: 0;
+}
+.version-member-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.version-facts {
+  margin-top: 6px;
+}
+.version-excluded {
+  opacity: 0.5;
+}
+.version-candidate-covers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+.version-candidate {
+  margin: 10px 0;
+}
+.version-candidate .ant-card-body {
+  padding: 10px;
+}
+.version-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+.version-proposal > .version-member-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.version-proposal .ant-typography {
+  margin-bottom: 0;
+}
+.version-sticky-actions {
+  flex-shrink: 0;
+  background: var(--ant-color-bg-container, #fff);
+  border-top: 1px solid #8882;
+  padding: 10px 0 0;
+  z-index: 2;
+}
+.version-section-heading {
+  flex-shrink: 0;
+}
+.version-section-heading h4 {
+  margin: 0 !important;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+.version-section-heading > div {
+  min-width: 0;
+}
+.version-empty {
+  margin: 16px 4px;
+  color: var(--ant-color-text-secondary, #888);
+}
+.version-task-details {
+  max-width: 420px;
+}
+.version-region-switch {
+  display: none;
+}
+.version-management[data-layout="mobile"] .version-region-switch {
+  display: block;
+}
+.version-management[data-layout="mobile"] .version-layout {
+  display: block;
+}
+.version-management[data-layout="mobile"] .version-column {
+  display: none;
+  border: 0;
+  padding: 10px;
+}
+.version-management[data-layout="mobile"] .version-region-groups .version-left,
+.version-management[data-layout="mobile"]
+  .version-region-members
+  .version-center {
+  display: flex;
+}
+.version-management[data-layout="mobile"] .version-scroll,
+.version-management[data-layout="mobile"]
+  .version-proposal
+  > .version-member-list {
+  overflow: visible;
+}
+.version-management[data-layout="mobile"] .version-sticky-actions {
+  position: sticky;
+  bottom: 0;
+  padding: 10px;
+}
+.version-management[data-layout="mobile"] .version-pager {
+  position: static;
+}
+.version-management[data-layout="mobile"] .version-library {
+  width: 170px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .version-management *,
+  .version-management *::before,
+  .version-management *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+.version-section-heading h4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* One stable center scroller keeps recommendations directly after members. */
+.version-management[data-layout="drawer"] .version-layout {
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+.version-center-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.version-center-body > .version-scroll,
+.version-center-body .version-proposal > .version-scroll,
+.version-center-body .version-proposal > .version-member-list,
+.version-candidates-below .version-scroll {
+  overflow: visible;
+  flex: none;
+}
+.version-candidates-below {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ant-color-border-secondary, #8882);
+}
+.version-candidates-below .version-candidate {
+  margin-bottom: 12px;
+}
+.version-centered-heading {
+  position: relative;
+  justify-content: center;
+  text-align: center;
+  padding: 0 40px 12px;
+}
+.version-centered-heading > .ant-dropdown-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.version-identity {
+  margin: 6px 0;
+}
+.version-member-title {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  font-weight: 600;
+  cursor: copy;
+}
+.version-member-cover {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.version-quick-action {
+  opacity: 0;
+}
+.version-member:hover .version-quick-action,
+.version-member:focus-within .version-quick-action,
+.version-quick-action:focus-visible {
+  opacity: 1;
+}
+.version-tag-toggle {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.version-labels .ant-tag {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.version-label-popover {
+  width: min(360px, calc(100vw - 64px));
+}
+.version-label-popover .ant-space {
+  display: flex;
+  margin-top: 10px;
+}
+.version-management[data-layout="mobile"] .version-center-body {
+  overflow: visible;
+}
+@media (hover: none) {
+  .version-quick-action {
+    opacity: 1;
+  }
+}
+
+.version-selection-empty {
+  height: 100%;
+  min-height: min(320px, 60dvh);
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.version-selection-empty .ant-empty {
+  margin: 0;
+}
+.version-selection-empty h4 {
+  margin: 12px 0 8px;
+}
