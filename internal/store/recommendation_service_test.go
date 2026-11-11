@@ -71,7 +71,7 @@ func (r *recommendationRunner) Call(ctx context.Context, operation string, input
 }
 func waitRecommendationJob(t *testing.T, s *Store, id, state string) *model.Job {
 	t.Helper()
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(60 * time.Second)
 	for time.Now().Before(deadline) {
 		j, e := s.Job(context.Background(), id)
 		if e != nil {

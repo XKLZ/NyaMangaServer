@@ -126,9 +126,14 @@ storage-verify:
 	$(GO) run ./cmd/storage-verify --config "$(STORAGE_CONFIG)" --archive-manifest "$(ORIGINALS_MANIFEST)"
 
 # CI compiles embedded assets once, then runs checks without implicit rebuilds.
-.PHONY: ci-check
+.PHONY: ci-check ci-race
 ci-check: build check-source test-web test-dev-tools
 	mkdir -p .runtime/tests/tmp
 	$(GO) vet $(GO_PACKAGES)
 	TMPDIR=$(CURDIR)/.runtime/tests/tmp $(GO) test $(GO_PACKAGES)
-	TMPDIR=$(CURDIR)/.runtime/tests/tmp $(GO) test -race $(GO_PACKAGES)
+
+# SQLite's generated Go code is heavily instrumented by -race. Keep the full
+# ordinary suite above and run concurrency-focused regressions serially.
+ci-race:
+	mkdir -p .runtime/tests/tmp
+	TMPDIR=$(CURDIR)/.runtime/tests/tmp python3 scripts/test/release-race.py

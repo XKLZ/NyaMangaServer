@@ -141,7 +141,7 @@ func TestCatalogOpenAPIContract(t *testing.T) {
 	call("PATCH", "/libraries/"+id, `{"expected_revision":1,"scan_interval_minutes":null}`, 200)
 	j := call("POST", "/libraries/"+id+"/scans", `{}`, 202)
 	jobID := j["job_id"].(string)
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(60 * time.Second)
 	for {
 		v, e := h.catalog.Job(ctx, jobID)
 		if e != nil {

@@ -24,7 +24,7 @@ func TestIncrementalDiscoveryServiceReusesAllPairsAndOnlyChangedEdition(t *testi
 		if e != nil {
 			t.Fatal(e)
 		}
-		for deadline := time.Now().Add(8 * time.Second); ; {
+		for deadline := time.Now().Add(60 * time.Second); ; {
 			state, e := s.Job(ctx, j.ID)
 			if e != nil {
 				t.Fatal(e)

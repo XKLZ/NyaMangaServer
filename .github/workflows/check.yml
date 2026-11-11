@@ -26,6 +26,8 @@ jobs:
       - run: make install
       - name: One production build, source and anonymous checks
         run: make ci-check
+      - name: Serial concurrency-focused race regressions
+        run: make ci-race
       - run: python3 deploy/tests/config-static.py && python3 deploy/tests/beta-tools.py && python3 deploy/tests/release-tools.py
       - run: python3 scripts/check/public-tree.py
       - run: PLAYWRIGHT_BROWSERS_PATH="$PWD/.runtime/cache/playwright" npm --prefix web exec -- playwright install --with-deps chromium

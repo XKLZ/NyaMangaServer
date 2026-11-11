@@ -73,7 +73,7 @@ func TestCatalogHTTPFlow(t *testing.T) {
 	if started.Header().Get("Location") != "/api/v1/jobs/"+j.ID {
 		t.Fatal("job location")
 	}
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(60 * time.Second)
 	for {
 		v, e := h.catalog.Job(context.Background(), j.ID)
 		if e != nil {

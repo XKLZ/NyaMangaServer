@@ -22,6 +22,8 @@
 
 `release.yml`仅手工触发，默认`publish=false`。检查job只读；镜像job在原生Linux AMD64构建并匿名验证，再导出同一个已测镜像及安装包。仅publish job获得contents/packages写权限，并受release环境控制。
 
+检查依次运行完整普通Go测试、vet、网页静态与单元检查，以及`make ci-race`的串行并发回归集合；不将全包race超时改记为通过。实际容器和浏览器流程独立验证。
+
 - tag：`v0.7.0-beta.1`
 - image：`ghcr.io/xklz/nyamangaserver:0.7.0-beta.1`
 - 不使用latest，不覆写已存在版本。
