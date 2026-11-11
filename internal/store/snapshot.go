@@ -19,7 +19,16 @@ func (s *Store) PrivateSnapshot(ctx context.Context, dir, prefix string) error {
 	if e = f.Close(); e != nil {
 		return e
 	}
-	if _, e = s.Write.ExecContext(ctx, "VACUUM INTO ?", name); e != nil {
+	// VACUUM cannot run inside the principal-bound write transaction. Pin the
+	// exclusive writer connection only for this offline snapshot operation;
+	// ordinary business writes must keep using the authorization wrapper.
+	conn, e := s.Write.Conn(ctx)
+	if e != nil {
+		os.Remove(name)
+		return e
+	}
+	defer conn.Close()
+	if _, e = conn.ExecContext(ctx, "VACUUM INTO ?", name); e != nil {
 		os.Remove(name)
 		return e
 	}
