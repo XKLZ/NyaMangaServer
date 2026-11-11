@@ -14,6 +14,18 @@ import tarfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def public_markdown(name, version):
+    def link(match):
+        target = match[2]
+        if '://' in target or target.startswith('#'):
+            return match[0]
+        path, *fragment = target.split('#', 1)
+        relative = (ROOT / name).parent.joinpath(path).resolve().relative_to(ROOT)
+        suffix = '#' + fragment[0] if fragment else ''
+        return f'[{match[1]}](https://github.com/XKLZ/NyaMangaServer/blob/v{version}/{relative}{suffix})'
+    return re.sub(r'\[([^\]\n]*)\]\(([^)\n]+)\)', link, (ROOT / name).read_text())
+
+
 def installation_bundle(directory, version):
     allowed = ['deploy/configure.py', 'deploy/compose.release.yaml', 'deploy/compose.library.yaml', 'deploy/config.example.json', 'deploy/README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']
     allowed += [str(path.relative_to(ROOT)) for path in sorted((ROOT / 'third_party').rglob('*')) if path.is_file()]
@@ -22,15 +34,7 @@ def installation_bundle(directory, version):
             # Standalone install kits have no source tree. Link supplemental
             # documentation to the exact release tag rather than broken paths.
             if name in ('deploy/README.md', 'THIRD_PARTY_NOTICES.md'):
-                def link(match):
-                    target = match[2]
-                    if '://' in target or target.startswith('#'):
-                        return match[0]
-                    path, *fragment = target.split('#', 1)
-                    relative = (ROOT / name).parent.joinpath(path).resolve().relative_to(ROOT)
-                    suffix = '#' + fragment[0] if fragment else ''
-                    return f'[{match[1]}](https://github.com/XKLZ/NyaMangaServer/blob/v{version}/{relative}{suffix})'
-                body = re.sub(r'\[([^\]\n]*)\]\(([^)\n]+)\)', link, (ROOT / name).read_text()).encode()
+                body = public_markdown(name, version).encode()
                 entry = tarfile.TarInfo(name)
                 entry.size, entry.mode = len(body), 0o644
                 bundle.addfile(entry, io.BytesIO(body))
@@ -92,7 +96,7 @@ def main():
     installation_bundle(directory, version)
     receipt = {'format': 1, 'version': version, 'commit': commit, 'image': tag, 'image_id': info['Id'], 'platform': 'linux/amd64'}
     (directory / 'build-identity.json').write_text(json.dumps(receipt, indent=2) + '\n')
-    shutil.copyfile(ROOT / f'docs/releases/v{version}.md', directory / 'RELEASE-NOTES.md')
+    (directory / 'RELEASE-NOTES.md').write_text(public_markdown(f'docs/releases/v{version}.md', version))
     write_checksums(directory)
     print('Exported tested image and install bundle; nothing uploaded')
 

@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -47,7 +48,10 @@ def main():
                       provider_key_file=str(instance / 'provider-key'),
                       provider_credentials_file=str(instance / 'providers.enc'))
         config.pop('work_recommendations')
-        config['library_roots'][0]['path'] = str(root / 'input/fixtures')
+        # Separate roots exercise the normal restore mapping; copy2 preserves
+        # the exact source bytes and mtime, not regenerated archive contents.
+        shutil.copytree(root / 'input/fixtures', instance / 'library')
+        config['library_roots'][0]['path'] = str(instance / 'library')
         path = instance / 'config.json'
         path.write_text(json.dumps(config))
         config_files.append(path)

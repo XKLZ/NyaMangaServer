@@ -42,6 +42,9 @@ class ReleaseTools(unittest.TestCase):
     def test_shared_version(self):
         value = version.check()
         self.assertIn(':' + value, (ROOT / 'deploy/compose.release.yaml').read_text())
+        notes = package.public_markdown(f'docs/releases/v{value}.md', value)
+        self.assertNotIn('](../', notes)
+        self.assertIn('/blob/v' + value + '/README.md', notes)
 
     def test_private_repeat_no_overwrite_and_spaces(self):
         with tempfile.TemporaryDirectory() as temp:

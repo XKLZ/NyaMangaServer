@@ -46,7 +46,7 @@ try {
       await page.waitForTimeout(700);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       assert.equal(overflow, false, name + ' horizontal overflow ' + route);
-      await page.screenshot({ path: path.join(output, name + '-' + route + '.png'), fullPage: true });
+      await page.screenshot({ path: path.join(output, name + '-' + route + '.png'), fullPage: true, animations: 'disabled' });
       records.push({ viewport: name, route, dark, horizontalOverflow: overflow });
       if (route === 'books' && (name === 'desktop-light' || name === 'mobile-light')) {
         const cover = page.locator('.book-cover-button').filter({ has: page.locator('img') }).first();
@@ -54,7 +54,7 @@ try {
         const detail = page.getByRole('dialog').filter({ hasText: '漫画详情' });
         await detail.waitFor();
         await detail.getByText('本地文件', { exact: true }).waitFor();
-        await page.screenshot({ path: path.join(output, name + '-book-detail.png'), fullPage: true });
+        await page.screenshot({ path: path.join(output, name + '-book-detail.png'), fullPage: true, animations: 'disabled' });
         await detail.getByRole('button', { name: '关闭', exact: true }).click();
         await detail.waitFor({ state: 'hidden' });
         records.push({ viewport: name, interaction: 'open-complete-book-detail-and-close', passed: true });

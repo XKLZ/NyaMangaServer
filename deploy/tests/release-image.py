@@ -61,14 +61,21 @@ def main():
             command = ['docker', 'compose', '-p', project, '-f', str(path / 'compose.yaml')]
             projects.append((command, environment))
             subprocess.run(command + ['create', 'server'], env=environment, check=True)
-            code = """import pathlib,shutil,os
+            code = """import pathlib,shutil,os,hashlib
 root=pathlib.Path('/library');assert not list(root.iterdir())
 for p in pathlib.Path('/fixtures').iterdir():
  assert p.is_file() and not p.is_symlink()
- target=root/p.name;shutil.copyfile(p,target);os.chown(target,65532,65532);os.chmod(target,0o600)
+ target=root/p.name;shutil.copy2(p,target);os.chown(target,65532,65532);os.chmod(target,0o600)
+ assert target.stat().st_mtime_ns==p.stat().st_mtime_ns
+ with p.open('rb') as source,target.open('rb') as copied:
+  assert hashlib.file_digest(source,'sha256').digest()==hashlib.file_digest(copied,'sha256').digest()
 os.chown(root,65532,65532);os.chmod(root,0o700)
 """
-            subprocess.run(['docker', 'run', '--rm', '--pull=never', '--network=none', '--user=0:0', '--entrypoint=/usr/local/bin/python', '-v', project + '_anonymous-library:/library', '-v', str(path / 'fixtures') + ':/fixtures:ro', args.image, '-c', code], check=True)
+            # Restore the same source files, not newly generated ZIPs with new
+            # entry timestamps. Keep separate read-only named volumes while
+            # preserving both bytes and stat identity used by this exact check.
+            source_fixtures = root / '0/fixtures'
+            subprocess.run(['docker', 'run', '--rm', '--pull=never', '--network=none', '--user=0:0', '--entrypoint=/usr/local/bin/python', '-v', project + '_anonymous-library:/library', '-v', str(source_fixtures) + ':/fixtures:ro', args.image, '-c', code], check=True)
             subprocess.run(command + ['up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '120'], env=environment, check=True)
             if index == 0:
                 run('beta-api.py', '--url', origin, '--token-file', path / 'setup-token', '--evidence', evidence, '--image', path / 'foreground.png')

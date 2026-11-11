@@ -66,6 +66,20 @@ def snapshot(api, objects):
             'reading': {i: api.call('GET', '/editions/' + i + '/reading-state') for i in ids}}
 
 
+def differences(before, after, prefix=''):
+    """Report changed field paths only, never secret or business field values."""
+    if isinstance(before, dict) and isinstance(after, dict):
+        result = []
+        for key in sorted(before.keys() | after.keys()):
+            field = prefix + '/' + key
+            if key not in before or key not in after:
+                result.append(field)
+            else:
+                result.extend(differences(before[key], after[key], field))
+        return result
+    return [] if before == after else [prefix]
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('action', choices=['backup', 'prepare', 'verify', 'verify-write-barrier'])
@@ -123,7 +137,8 @@ def main():
             private_json(root / 'after-restore.json', after)
             # Ignore ephemeral pagination snapshots, not business objects.
             for key in ('editions', 'file_states', 'work', 'reading', 'accounts', 'settings', 'image_digests'):
-                assert after[key] == before[key], 'restore changed ' + key
+                changed = differences(before[key], after[key], key)
+                assert not changed, 'restore changed fields: ' + ', '.join(changed[:30])
             assert after['series']['items'] == before['series']['items']
             assert after['tags']['items'] == before['tags']['items']
             private_json(root / 'activation.json', activation)
