@@ -54,7 +54,8 @@ type Service struct {
 	cancel         context.CancelFunc
 	done           chan struct{}
 	// BeforePublish is only a deterministic test synchronization hook.
-	BeforePublish func(context.Context, model.Job, model.Item)
+	BeforePublish       func(context.Context, model.Job, model.Item)
+	beforeDownloadBlock func(context.Context) // deterministic tests
 }
 
 func New(s Repository, c config.Config, logger *slog.Logger) *Service {

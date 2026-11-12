@@ -96,9 +96,25 @@ func TestInstanceFullNonemptyBusinessRoundtripLogicalIdentity(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	deviceToken, _, e := auth.New(db, "").LoginDevice(ctx, "fixture-viewer", "anonymous recovery password", "Fixture device", "fixture")
+	deviceToken, fixtureDevice, e := auth.New(db, "").LoginDevice(ctx, "fixture-viewer", "anonymous recovery password", "Fixture device", "fixture")
 	if e != nil {
 		t.Fatal(e)
+	}
+
+	a := fixtureDevice.Account.ID
+	for _, fixture := range []struct {
+		query string
+		args  []any
+	}{
+		{`INSERT INTO client_downloads(id,account_id,edition_id,cache_epoch,request_key,content_revision,source_identity,length,state,created_at)
+		 VALUES('offline-download',?,'fixture-edition-0',?,'fixture-download',7,'anonymous-identity',1,'preparing',1)`, []any{a, sourceClient.CacheEpoch}},
+		{`INSERT INTO client_offline_manifests VALUES('offline-manifest',?,'fixture-edition-0',?,7,1,lower(hex(zeroblob(32))),2,'fixture-directory','fixture-image')`, []any{a, sourceClient.CacheEpoch}},
+		{`INSERT INTO client_offline_receipts(account_id,cache_epoch,operation_id,client_instance_id,object_kind,object_id,state_kind,request_digest,received_at,result_json)
+		 VALUES(?,?,'offline-receipt','fixture','edition','fixture-edition-0','reading',lower(hex(zeroblob(32))),2,'{"operation_id":"offline-receipt","status":"applied","revision":4}')`, []any{a, sourceClient.CacheEpoch}},
+	} {
+		if _, e = db.Write.ExecContext(ctx, fixture.query, fixture.args...); e != nil {
+			t.Fatal(e)
+		}
 	}
 
 	vault := provider.NewVault(c.ProviderKeyFile, c.ProviderCredentialsFile)
@@ -107,7 +123,7 @@ func TestInstanceFullNonemptyBusinessRoundtripLogicalIdentity(t *testing.T) {
 		t.Fatal(e)
 	}
 	before := instanceLogicalRows(t, db.Read)
-	nonempty := []string{"account_profiles", "account_library_grants", "reading_states", "reading_sessions", "reading_state_requests", "works", "editions", "files", "series", "series_members", "external_metadata", "edition_sources", "field_overrides", "edition_label_policy", "edition_version_labels", "tag_follows", "tag_images", "recommendation_materials", "import_candidates", "import_members", "work_proposals", "work_proposal_decisions", "series_match_feedback", "health_findings", "health_artifacts", "gallery_highlight_connections", "job_items", "scan_entries"}
+	nonempty := []string{"client_downloads", "client_offline_manifests", "client_offline_receipts", "account_profiles", "account_library_grants", "reading_states", "reading_sessions", "reading_state_requests", "works", "editions", "files", "series", "series_members", "external_metadata", "edition_sources", "field_overrides", "edition_label_policy", "edition_version_labels", "tag_follows", "tag_images", "recommendation_materials", "import_candidates", "import_members", "work_proposals", "work_proposal_decisions", "series_match_feedback", "health_findings", "health_artifacts", "gallery_highlight_connections", "job_items", "scan_entries"}
 	for _, name := range nonempty {
 		if before[name] == "[]" || before[name] == "" {
 			t.Fatalf("retention category was empty: %s", name)
@@ -167,6 +183,13 @@ func TestInstanceFullNonemptyBusinessRoundtripLogicalIdentity(t *testing.T) {
 		t.Fatal("restored forced password login", forcedSession, e)
 	}
 	reader := model.WithActor(ctx, *viewerSession.Account)
+	if _, e = restored.OfflineOperationStatus(reader, model.OfflineQueue{ClientIdentity: sourceClient, AccountID: a, ClientInstanceID: "fixture"}, []string{"offline-receipt"}); !errors.Is(e, model.ErrClientEpoch) {
+		t.Fatal("restored old-epoch receipt could be replayed", e)
+	}
+	if _, e = restored.Download(reader, "offline-download"); !errors.Is(e, model.ErrClientEpoch) {
+		t.Fatal("restored download epoch", e)
+	}
+
 	reading, e := restored.ReadingState(reader, "fixture-edition-0")
 	if e != nil || reading.ReadCount != 3 || !reading.Completed || reading.Revision != 4 {
 		t.Fatal("restored reading", reading, e)

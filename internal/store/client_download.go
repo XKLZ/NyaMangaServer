@@ -135,3 +135,13 @@ func (s *Store) FinishDownload(ctx context.Context, d model.Download, digest, re
 		d.AccountID, d.EditionID, d.ContentRevision, digest, digest, reason, d.ID)
 	return err
 }
+
+func (s *Store) DownloadDigest(ctx context.Context, d model.Download) (string, error) {
+	var digest string
+	err := s.Read.QueryRowContext(ctx, `SELECT sha256 FROM client_downloads WHERE account_id=? AND cache_epoch=? AND edition_id=?
+		AND content_revision=? AND source_identity=? AND state='ready' LIMIT 1`, d.AccountID, d.Epoch, d.EditionID, d.ContentRevision, d.Source).Scan(&digest)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	return digest, err
+}

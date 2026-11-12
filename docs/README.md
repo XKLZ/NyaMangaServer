@@ -7,7 +7,7 @@
 - [完整导入与审核](import-workflow.md)
 - [版本管理](version-management.md)与[系列管理](series-management.md)
 - [标签管理](tag-management.md)、[标签图片](tag-images.md)与[关注](tag-follows.md)
-- [账号权限及阅读状态](data-compatibility.md)、[客户端协议](client-foundation.md)
+- [账号权限及阅读状态](data-compatibility.md)、[客户端协议](client-foundation.md)、[下载与离线协议](client-offline.md)
 - [增强设置](enhancements.md)与[本地画廊高亮](local-gallery-highlight.md)
 - [数据健康](data-health.md)、[存储与扫描](scan-storage-remediation.md)、[备份恢复](backup-restore.md)
 

@@ -14,6 +14,7 @@ type Repository interface {
 	PrepareDownload(context.Context, model.Download) (model.Download, error)
 	Download(context.Context, string) (model.Download, error)
 	AbandonDownload(context.Context, string) error
+	DownloadDigest(context.Context, model.Download) (string, error)
 	NextDownload(context.Context) (model.Download, error)
 	FinishDownload(context.Context, model.Download, string, string) error
 	ClientIdentity(context.Context) (model.ClientIdentity, error)

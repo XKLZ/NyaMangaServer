@@ -50,10 +50,22 @@ func (s *Service) Download(ctx context.Context, id string) (model.Download, erro
 		return d, err
 	}
 	b, err := s.store.Edition(ctx, d.EditionID)
-	if err == nil && b.ContentRevision != d.ContentRevision {
-		err = comic.ErrChanged
+	if err != nil {
+		return d, err
 	}
-	return d, err
+	if b.ContentRevision != d.ContentRevision {
+		return d, comic.ErrChanged
+	}
+	if d.State == "ready" {
+		key, _, e := s.pageSource(ctx, *b)
+		if e != nil {
+			return d, e
+		}
+		if key.Epoch != d.Epoch || downloadSourceID(key) != d.Source {
+			return d, comic.ErrChanged
+		}
+	}
+	return d, nil
 }
 
 func (s *Service) AbandonDownload(ctx context.Context, id string) error {
@@ -119,7 +131,7 @@ type DownloadFile struct {
 }
 
 func (s *Service) OpenDownload(ctx context.Context, id string, authenticate func() error) (*DownloadFile, error) {
-	d, err := s.Download(ctx, id)
+	d, err := s.store.Download(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -293,6 +305,16 @@ func (s *Service) digestDownload(ctx context.Context, d model.Download) (string,
 	if err != nil {
 		return "", err
 	}
+	reused, err := s.store.DownloadDigest(ctx, d)
+	if err != nil {
+		return "", err
+	}
+	if reused != "" {
+		if _, err = verify(); err != nil {
+			return "", err
+		}
+		return reused, nil
+	}
 	f, err := openDownloadFile(key)
 	if err != nil {
 		return "", err
@@ -300,7 +322,13 @@ func (s *Service) digestDownload(ctx context.Context, d model.Download) (string,
 	defer f.Close()
 	hash := sha256.New()
 	buf := make([]byte, downloadBlock)
+	s.downloadMu.Lock()
+	hook := s.beforeDownloadBlock
+	s.downloadMu.Unlock()
 	for remaining := d.Length; remaining > 0; {
+		if hook != nil {
+			hook(ctx)
+		}
 		if _, err = verify(); err != nil {
 			return "", err
 		}
@@ -314,5 +342,15 @@ func (s *Service) digestDownload(ctx context.Context, d model.Download) (string,
 	if _, err = verify(); err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%x", hash.Sum(nil)), checkDownloadFile(f, key)
+	if err = checkDownloadFile(f, key); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+}
+
+// SetDownloadBlockHook allows deterministic source and authorization changes in tests.
+func (s *Service) SetDownloadBlockHook(hook func(context.Context)) {
+	s.downloadMu.Lock()
+	defer s.downloadMu.Unlock()
+	s.beforeDownloadBlock = hook
 }

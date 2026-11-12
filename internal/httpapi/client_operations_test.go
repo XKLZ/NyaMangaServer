@@ -120,6 +120,29 @@ func TestClientOfflineOperationsReceiptsDependenciesAndTime(t *testing.T) {
 	if replay := ops(second, restart)[0]; replay.Revision != got.Revision || replay.SessionID != got.SessionID {
 		t.Fatal(replay)
 	}
+	if _, e = db.Write.Exec("INSERT INTO tags VALUES('offline-tag','tag','offline-fixture-tag')"); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = db.Write.Exec("INSERT INTO effective_edition_tags VALUES(?,'offline-tag')", other.ID); e != nil {
+		t.Fatal(e)
+	}
+	follow := model.OfflineOperation{ID: "offline-follow", Sequence: 9, ObjectID: "offline-tag", Type: "follow", Expected: &rev0,
+		ReportedAt: json.RawMessage(`"invalid-clock"`), Body: model.OfflineOperationBody{Value: &yes}}
+	no := false
+	unfollow := model.OfflineOperation{ID: "offline-unfollow", Sequence: 10, ObjectID: follow.ObjectID, Type: "unfollow", Previous: follow.ID,
+		ReportedAt: json.RawMessage(fmt.Sprint(now.Unix() + 301)), Body: model.OfflineOperationBody{Value: &no}}
+	tagOps := ops(second, follow, unfollow)
+	if tagOps[0].TagFollow == nil || !tagOps[0].TagFollow.Followed || !tagOps[0].Adjusted ||
+		tagOps[1].TagFollow == nil || tagOps[1].TagFollow.Followed || !tagOps[1].Adjusted || tagOps[1].EventAt != now.Unix() {
+		t.Fatal(tagOps)
+	}
+	deviceTestCall(t, f.h, "DELETE", "/auth/device-sessions/"+first.Device.ID, "", second.Token, 204)
+	post(first, "operation-status", model.OfflineStatusRequest{OfflineQueue: queue, OperationIDs: []string{start.ID}}, 401)
+	first = deviceTestLogin(t, f.h, "deterministic-editor", "new anonymous editor password")
+	if resumed := status(first, restart.ID); resumed[0].Revision != got.Revision || resumed[0].SessionID != got.SessionID {
+		t.Fatal(resumed)
+	}
+
 	admin := deviceTestLogin(t, f.h, "admin", "anonymous password")
 	post(admin, "operations", model.OfflineOperationsRequest{OfflineQueue: queue, Operations: []model.OfflineOperation{start}}, 403)
 	a, _ := model.Actor(actor)

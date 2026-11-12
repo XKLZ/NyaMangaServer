@@ -16,6 +16,7 @@
 | 本地画廊高亮只读协议、设置与独立GM脚本 | [本地画廊高亮](local-gallery-highlight.md) |
 | 搜索、过滤、收藏隐藏、账号保存条件 | [搜索](search.md) |
 | 设备认证、作品查询、版本化页目录和阅读状态 | [客户端协议](client-foundation.md) |
+| 原文件续传、受管离线清单和个人状态重放 | [下载与离线协议](client-offline.md) |
 | Series／Work／Edition／File及人工整理 | [领域规则](domain-rules.md)、[Work模型](work-edition-model.md) |
 | 版本／系列推荐及显式人工决定 | [版本管理](version-management.md)、[系列工作台](series-management.md) |
 | 完整导入、来源比较和逐关审核 | [导入流程](import-workflow.md)、[来源查询](import-source-search.md) |
@@ -25,7 +26,7 @@
 
 ## 尚未交付的能力
 
-- 完整阅读器、下载、离线同步和真实客户端联调。
+- 完整阅读器、真实客户端后台下载和断网界面联调。
 - 面向用户的向量检索；现有本地推荐特征不等于公开向量搜索能力。
 - 自动备份与远端备份存储；手动整实例备份／恢复已交付，NAS匿名标准恢复见[测试版验证](../deploy/BETA.md)。
 - TreeC转换由独立工具维护，主项目仅承接标准恢复包；不在主项目再建专用转换路径。

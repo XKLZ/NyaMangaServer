@@ -18298,9 +18298,1272 @@
               "default": "display"
             },
             "description": "Only controls scheduling. Repeated or unsupported header values are rejected."
+          },
+          {
+            "name": "offline_manifest_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Binds this request to the frozen account-owned offline manifest. Requires X-Nya-Image-Purpose: prefetch."
           }
         ],
         "description": "Use display for the current page and prefetch for speculative adjacent pages. Both purposes use the same bytes and ETag."
+      }
+    },
+    "/client/editions/{id}/downloads": {
+      "post": {
+        "operationId": "prepareOriginalDownload",
+        "summary": "Prepare a version-bound original-file SHA-256",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Existing preparation status or reusable digest.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDownload"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Preparation queued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDownload"
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Content or source changed, or the idempotency key is already bound.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "download_busy: the download worker queue or global transfer capacity is full.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. If supplied with a device request, must match the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientDownloadRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/downloads/{id}": {
+      "get": {
+        "operationId": "getOriginalDownload",
+        "summary": "Read a download preparation owned by the caller",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Preparation status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientDownload"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "content_changed, parsing_changed, cache_epoch_changed, or source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "abandonOriginalDownload",
+        "summary": "Abandon a download preparation owned by the caller",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Abandoned."
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "content_changed, parsing_changed, cache_epoch_changed, or source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. If supplied with a device request, must match the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ]
+      }
+    },
+    "/client/downloads/{id}/content": {
+      "get": {
+        "operationId": "downloadOriginalContent",
+        "summary": "Transfer the original archive or one byte range",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete original archive. If-Range mismatch can return this response to a range request.",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0
+                }
+              },
+              "Accept-Ranges": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "bytes"
+                  ]
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/vnd.comicbook+zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Single satisfiable byte range.",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0
+                }
+              },
+              "Accept-Ranges": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "bytes"
+                  ]
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/vnd.comicbook+zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Matching ETag after current access and source checks."
+          },
+          "400": {
+            "description": "invalid_download_range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "download_not_ready, content_changed or source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "HTTP precondition failed."
+          },
+          "416": {
+            "description": "Range is outside the file.",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "download_session_limit: one concurrent transfer per authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "download_busy: the download worker queue or global transfer capacity is full.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Range",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "One bytes range up to 16 MiB. Use bounded explicit ranges for large files."
+          },
+          {
+            "name": "If-Range",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use the strong archive ETag. Mismatch selects the complete archive."
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "head": {
+        "operationId": "downloadOriginalHead",
+        "summary": "Read the original archive HTTP headers",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete original archive. If-Range mismatch can return this response to a range request.",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0
+                }
+              },
+              "Accept-Ranges": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "bytes"
+                  ]
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Single satisfiable byte range.",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 0
+                }
+              },
+              "Accept-Ranges": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "bytes"
+                  ]
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Matching ETag after current access and source checks."
+          },
+          "400": {
+            "description": "invalid_download_range"
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope."
+          },
+          "409": {
+            "description": "download_not_ready, content_changed or source unavailable."
+          },
+          "412": {
+            "description": "HTTP precondition failed."
+          },
+          "416": {
+            "description": "Range is outside the file.",
+            "headers": {
+              "Content-Range": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "download_session_limit: one concurrent transfer per authenticated session.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "download_busy: the download worker queue or global transfer capacity is full.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error."
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Range",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "One bytes range up to 16 MiB. Use bounded explicit ranges for large files."
+          },
+          {
+            "name": "If-Range",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use the strong archive ETag. Mismatch selects the complete archive."
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/client/editions/{id}/offline-manifests": {
+      "post": {
+        "operationId": "createOfflineManifest",
+        "summary": "Prepare or reuse a frozen offline page structure",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen structure and current metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfflineManifest"
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "content_changed, parsing_changed, cache_epoch_changed, or source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. If supplied with a device request, must match the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfflineManifestRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/offline-manifests/{id}": {
+      "get": {
+        "operationId": "getOfflineManifest",
+        "summary": "Read a current-account offline manifest and its status",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manifest.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfflineManifest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "content_changed, parsing_changed, cache_epoch_changed, or source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/client/offline-manifests/{id}/pages": {
+      "get": {
+        "operationId": "offlineManifestPages",
+        "summary": "List zero-based pages of the frozen manifest",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page directory.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfflineManifestPages"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource absent or outside the current account scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "content_changed, parsing_changed, cache_epoch_changed, or source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/client/offline/check": {
+      "post": {
+        "operationId": "checkOfflineManifestSet",
+        "summary": "Check up to 100 account-owned manifest identities",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Results in request order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OfflineCheckResult"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. If supplied with a device request, must match the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfflineCheckRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/offline/operations": {
+      "post": {
+        "operationId": "replayOfflineOperations",
+        "summary": "Apply bounded personal operations in order with per-item receipts",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-item results in request order. A different request for an existing operation ID has item status 409.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OfflineOperationResult"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The authenticated account does not match the queue binding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "cache_epoch_changed: keep the prior queue isolated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "maintenance_active: writes are paused. Query status after an unknown outcome.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. If supplied with a device request, must match the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfflineOperationsRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/offline/operation-status": {
+      "post": {
+        "operationId": "offlineOperationStatus",
+        "summary": "Query receipts for unknown outcomes after current authorization",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-item results in request order. A different request for an existing operation ID has item status 409.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OfflineOperationResult"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The authenticated account does not match the queue binding.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "cache_epoch_changed: keep the prior queue isolated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "maintenance_active: writes are paused. Query status after an unknown outcome.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Stable API error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. If supplied with a device request, must match the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfflineOperationStatusRequest"
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -28340,7 +29603,8 @@
               "downloads",
               "offline_sync",
               "image_variants",
-              "image_prefetch"
+              "image_prefetch",
+              "offline_manifests"
             ],
             "properties": {
               "device_sessions": {
@@ -28369,6 +29633,9 @@
               },
               "image_prefetch": {
                 "$ref": "#/components/schemas/ClientFeature"
+              },
+              "offline_manifests": {
+                "$ref": "#/components/schemas/ClientFeature"
               }
             }
           },
@@ -28388,7 +29655,13 @@
               "image_prefetch_parallel",
               "image_wait_seconds",
               "prefetch_before",
-              "prefetch_after"
+              "prefetch_after",
+              "download_segment_bytes",
+              "download_max_range_bytes",
+              "download_per_session",
+              "download_global",
+              "download_prepare_parallel",
+              "offline_batch_limit"
             ],
             "properties": {
               "page_index_base": {
@@ -28473,6 +29746,42 @@
                 "type": "integer",
                 "enum": [
                   2
+                ]
+              },
+              "download_segment_bytes": {
+                "type": "integer",
+                "enum": [
+                  8388608
+                ]
+              },
+              "download_max_range_bytes": {
+                "type": "integer",
+                "enum": [
+                  16777216
+                ]
+              },
+              "download_per_session": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "download_global": {
+                "type": "integer",
+                "enum": [
+                  2
+                ]
+              },
+              "download_prepare_parallel": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "offline_batch_limit": {
+                "type": "integer",
+                "enum": [
+                  100
                 ]
               }
             }
@@ -28902,6 +30211,620 @@
             "type": "string"
           }
         }
+      },
+      "ClientDownloadRequest": {
+        "type": "object",
+        "properties": {
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "idempotency_key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,128}$"
+          }
+        },
+        "required": [
+          "content_revision",
+          "idempotency_key"
+        ],
+        "additionalProperties": false
+      },
+      "ClientDownload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "edition_id": {
+            "type": "string"
+          },
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "length": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "preparing",
+              "ready",
+              "failed",
+              "abandoned"
+            ]
+          },
+          "error_code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "edition_id",
+          "content_revision",
+          "length",
+          "state"
+        ]
+      },
+      "OfflineManifestRequest": {
+        "type": "object",
+        "properties": {
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "parsing_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "content_revision",
+          "parsing_revision"
+        ],
+        "additionalProperties": false
+      },
+      "OfflineMetadata": {
+        "type": "object",
+        "properties": {
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "work_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "cover_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientSeries"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "digest",
+          "work_id",
+          "title",
+          "cover_revision",
+          "series"
+        ]
+      },
+      "OfflineManifest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "instance_id": {
+            "type": "string"
+          },
+          "cache_epoch": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "string"
+          },
+          "library_id": {
+            "type": "string"
+          },
+          "edition_id": {
+            "type": "string"
+          },
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "parsing_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "structure_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "page_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "directory_version": {
+            "type": "string"
+          },
+          "representation_version": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "unchanged",
+              "metadata_changed",
+              "content_changed",
+              "parsing_or_representation_changed",
+              "inaccessible",
+              "source_unavailable",
+              "cache_epoch_changed"
+            ]
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/OfflineMetadata"
+          }
+        },
+        "required": [
+          "id",
+          "instance_id",
+          "cache_epoch",
+          "account_id",
+          "library_id",
+          "edition_id",
+          "content_revision",
+          "parsing_revision",
+          "structure_digest",
+          "page_count",
+          "directory_version",
+          "representation_version",
+          "state",
+          "metadata"
+        ]
+      },
+      "OfflineManifestPage": {
+        "type": "object",
+        "properties": {
+          "page_index": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "media_type": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_index",
+          "display_name",
+          "media_type",
+          "image_url"
+        ]
+      },
+      "OfflineManifestPages": {
+        "type": "object",
+        "properties": {
+          "manifest_id": {
+            "type": "string"
+          },
+          "edition_id": {
+            "type": "string"
+          },
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "parsing_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "structure_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfflineManifestPage"
+            }
+          }
+        },
+        "required": [
+          "manifest_id",
+          "edition_id",
+          "content_revision",
+          "parsing_revision",
+          "structure_digest",
+          "page",
+          "page_size",
+          "total",
+          "items"
+        ]
+      },
+      "OfflineCheckRequest": {
+        "type": "object",
+        "properties": {
+          "instance_id": {
+            "type": "string"
+          },
+          "cache_epoch": {
+            "type": "string"
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "metadata_digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "instance_id",
+          "cache_epoch",
+          "objects"
+        ],
+        "additionalProperties": false
+      },
+      "OfflineCheckResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unchanged",
+              "metadata_changed",
+              "content_changed",
+              "parsing_or_representation_changed",
+              "inaccessible",
+              "source_unavailable",
+              "cache_epoch_changed"
+            ]
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/OfflineMetadata"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "OfflineOperationBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "parsing_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "page_index": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "value": {
+            "type": "boolean"
+          },
+          "accept_content_change": {
+            "type": "boolean"
+          },
+          "accept_parsing_change": {
+            "type": "boolean"
+          }
+        }
+      },
+      "OfflineOperation": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,128}$"
+          },
+          "local_sequence": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "object_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "start",
+              "restart",
+              "progress",
+              "complete",
+              "uncomplete",
+              "reset",
+              "favorite",
+              "hidden",
+              "follow",
+              "unfollow"
+            ]
+          },
+          "expected_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "previous_operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,128}$"
+          },
+          "offline_session_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,128}$"
+          },
+          "occurred_at": {
+            "description": "Optional reported UTC Unix seconds. Invalid values up to 256 JSON bytes are preserved and adjusted to receipt time."
+          },
+          "body": {
+            "$ref": "#/components/schemas/OfflineOperationBody"
+          }
+        },
+        "required": [
+          "operation_id",
+          "local_sequence",
+          "object_id",
+          "type",
+          "body"
+        ],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "expected_revision"
+            ]
+          },
+          {
+            "required": [
+              "previous_operation_id"
+            ]
+          }
+        ]
+      },
+      "OfflineOperationsRequest": {
+        "type": "object",
+        "properties": {
+          "instance_id": {
+            "type": "string"
+          },
+          "cache_epoch": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Required binding to the authenticated account. This value cannot select another account."
+          },
+          "client_instance_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfflineOperation"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "instance_id",
+          "cache_epoch",
+          "account_id",
+          "client_instance_id",
+          "operations"
+        ],
+        "additionalProperties": false
+      },
+      "OfflineOperationStatusRequest": {
+        "type": "object",
+        "properties": {
+          "instance_id": {
+            "type": "string"
+          },
+          "cache_epoch": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Required binding to the authenticated account. This value cannot select another account."
+          },
+          "client_instance_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          },
+          "operation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{8,128}$"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "instance_id",
+          "cache_epoch",
+          "account_id",
+          "client_instance_id",
+          "operation_ids"
+        ],
+        "additionalProperties": false
+      },
+      "OfflineOperationResult": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,128}$"
+          },
+          "local_sequence": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "blocked",
+              "conflict",
+              "rejected",
+              "inaccessible",
+              "unknown"
+            ]
+          },
+          "http_status": {
+            "type": "integer",
+            "enum": [
+              200,
+              404,
+              409,
+              422
+            ]
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "received_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "event_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reported_at": {
+            "description": "Original supplied occurrence time."
+          },
+          "adjusted": {
+            "type": "boolean"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "reading": {
+            "$ref": "#/components/schemas/ReadingState"
+          },
+          "edition_state": {
+            "$ref": "#/components/schemas/UserState"
+          },
+          "tag_follow": {
+            "type": "object",
+            "properties": {
+              "tag_id": {
+                "type": "string"
+              },
+              "followed": {
+                "type": "boolean"
+              },
+              "revision": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "tag_id",
+              "followed",
+              "revision"
+            ]
+          }
+        },
+        "required": [
+          "operation_id",
+          "status",
+          "http_status",
+          "revision",
+          "event_at"
+        ]
       }
     },
     "parameters": {

@@ -47,6 +47,13 @@
 | `/api/v1/client/works/{id}/reading-context` | GET | read |
 | `/api/v1/client/editions/{id}/pages` | GET | read |
 | `/api/v1/client/editions/{id}/pages/{page_index}/image` | GET | read |
+| `/api/v1/client/editions/{id}/downloads` | POST | personal |
+| `/api/v1/client/downloads/{id}` | GET、DELETE | 本人记录与当前库授权 |
+| `/api/v1/client/downloads/{id}/content` | HEAD、GET | 本人就绪记录与当前库授权 |
+| `/api/v1/client/editions/{id}/offline-manifests` | POST | personal |
+| `/api/v1/client/offline-manifests/{id}`、`/api/v1/client/offline-manifests/{id}/pages` | GET | 本人清单与当前库授权 |
+| `/api/v1/client/offline/check` | POST | 当前账号所选清单，只读 |
+| `/api/v1/client/offline/operations`、`/api/v1/client/offline/operation-status` | POST | 个人操作与本人回执 |
 | `/api/v1/diagnostics` | GET | admin |
 | `/api/v1/editions` | GET | read |
 | `/api/v1/editions/search` | POST | read |
@@ -294,5 +301,10 @@
 | `/saved-searches/{id}` | GET、PATCH、DELETE |
 | `/tags`、`/tag-catalog`、`/tag-catalog/{id}/images/{role}/content` | GET |
 | `/tags/{id}/follow` | PUT、DELETE |
+| `/client/editions/{id}/downloads`、`/client/editions/{id}/offline-manifests` | POST |
+| `/client/downloads/{id}` | GET、DELETE |
+| `/client/downloads/{id}/content` | HEAD、GET |
+| `/client/offline-manifests/{id}`、`/client/offline-manifests/{id}/pages` | GET |
+| `/client/offline/check`、`/client/offline/operations`、`/client/offline/operation-status` | POST |
 
 设备不接收 SSE。维护、任务、凭据、增强配置、元数据编辑、组织整理入口仅按网页授权矩阵开放。详见[客户端协议](client-foundation.md)。

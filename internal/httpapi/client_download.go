@@ -127,7 +127,7 @@ func (h *Handler) downloadContent(w http.ResponseWriter, r *http.Request) {
 	r = imageConditions(r)
 	tag := "\"" + f.Download.SHA256 + "\""
 	ranges := r.Header.Values("Range")
-	if cond := r.Header.Get("If-Range"); cond != "" && cond != tag {
+	if cond := r.Header.Values("If-Range"); len(cond) > 0 && (len(cond) != 1 || cond[0] != tag) {
 		r = r.Clone(r.Context())
 		r.Header.Del("Range")
 		ranges = nil
@@ -175,7 +175,7 @@ func downloadRangeEnd(values []string, size int64) (int64, bool) {
 		if err != nil || n == 0 {
 			return 0, false
 		}
-		return size, min(n, size) <= model.DownloadMaxRange
+		return size, n <= model.DownloadMaxRange
 	}
 	begin, err := rangeNumber(first)
 	if err != nil {
@@ -185,6 +185,9 @@ func downloadRangeEnd(values []string, size int64) (int64, bool) {
 	if last != "" {
 		n, err := rangeNumber(last)
 		if err != nil || n < begin {
+			return 0, false
+		}
+		if begin < size && n-begin >= model.DownloadMaxRange {
 			return 0, false
 		}
 		if n < size {
