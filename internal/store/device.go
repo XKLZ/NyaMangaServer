@@ -187,6 +187,8 @@ func deviceTableWrite(table, op, row, actor, passwordChange string) string {
 		owned += " AND OLD.account_id=NEW.account_id"
 	}
 	switch table {
+	case "client_downloads", "client_offline_manifests", "client_offline_receipts":
+		return owned
 	case "edition_user_states", "reading_states", "reading_sessions", "reading_state_requests", "saved_searches", "tag_follows", "tag_follow_epochs":
 		return owned
 	case "instance_state":

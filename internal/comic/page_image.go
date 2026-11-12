@@ -47,7 +47,7 @@ func sourceIdentity(info os.FileInfo) (SourceIdentity, bool) {
 	return SourceIdentity{uint64(st.Dev), uint64(st.Ino), info.Size(), info.ModTime().UnixNano()}, true
 }
 
-func (s SourceIdentity) matches(info os.FileInfo) bool {
+func (s SourceIdentity) Matches(info os.FileInfo) bool {
 	current, ok := sourceIdentity(info)
 	return ok && s == current
 }

@@ -7,6 +7,13 @@ import (
 
 // Repository describes the persistence operations required by this service.
 type Repository interface {
+	HealthWriteAllowed(context.Context) error
+	AccountByID(context.Context, string) (*model.Account, error)
+	PrepareDownload(context.Context, model.Download) (model.Download, error)
+	Download(context.Context, string) (model.Download, error)
+	AbandonDownload(context.Context, string) error
+	NextDownload(context.Context) (model.Download, error)
+	FinishDownload(context.Context, model.Download, string, string) error
 	ClientIdentity(context.Context) (model.ClientIdentity, error)
 	ClientReadingContext(context.Context, string, string, string) (model.ClientReadingContext, error)
 	SetFileEncoding(context.Context, string, model.EncodingUpdate, model.FileParsing, int) (*model.Edition, error)

@@ -14,6 +14,7 @@ import (
 )
 
 func (h *Handler) catalogRoutes(m *http.ServeMux) {
+	h.downloadRoutes(m)
 	m.HandleFunc(clientContextPath, h.method("GET", h.clientReadingContext))
 	m.HandleFunc(clientPagesPath, h.method("GET", h.clientPages))
 	m.HandleFunc(clientImagePath, h.method("GET", h.clientPageImage))

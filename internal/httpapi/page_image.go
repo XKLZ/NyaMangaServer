@@ -155,13 +155,7 @@ func (a *imageRequests) acquire(key string) (func(), int) {
 }
 
 func (h *Handler) admitImage(w http.ResponseWriter, r *http.Request) (*http.Request, func(), bool) {
-	identity := r.Context().Value(sessionKey{}).(identity)
-	var key string
-	if identity.device != nil {
-		key = "device:" + identity.device.ID
-	} else {
-		key = "web:" + string(identity.session.Hash)
-	}
+	key := imageSessionKey(r)
 	release, status := h.pageRequests.acquire(key)
 	if status != 0 {
 		h.imageBusy(w, r, status)
@@ -183,4 +177,12 @@ func (h *Handler) imageBusy(w http.ResponseWriter, r *http.Request, status int) 
 		return
 	}
 	h.error(w, r, status, string(comic.ErrImageBusy), "图片处理繁忙，请稍后重试")
+}
+
+func imageSessionKey(r *http.Request) string {
+	id := r.Context().Value(sessionKey{}).(identity)
+	if id.device != nil {
+		return "device:" + id.device.ID
+	}
+	return "web:" + string(id.session.Hash)
 }

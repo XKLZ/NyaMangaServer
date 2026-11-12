@@ -49,6 +49,7 @@ type attempt struct {
 	count int
 }
 type Handler struct {
+	downloads                         downloadRequests
 	pageRequests                      imageRequests
 	imageWait                         time.Duration         // deterministic test override
 	beforeImageResponse               func(context.Context) // deterministic authorization race tests
@@ -165,7 +166,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.logger.Info("request", "request_id", id, "method", r.Method, "status", rw.status, "duration_ms", time.Since(start).Milliseconds())
 	}()
 	defer func() {
-		if recover() != nil {
+		if failure := recover(); failure != nil {
+			if failure == http.ErrAbortHandler {
+				panic(failure)
+			}
 			h.logger.Error("request panic", "request_id", id)
 			if rw.status == 0 {
 				h.error(rw, r, 500, "internal_error", "服务暂时不可用")

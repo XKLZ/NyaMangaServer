@@ -103,6 +103,10 @@ func aclTableScope(table, row, actor string, write bool) string {
 		return lib(col("id"))
 	case "editions", "files", "works", "series", "import_batches", "jobs", "series_match_feedback", "work_proposals", "series_proposals":
 		return lib(col("library_id"))
+	case "client_downloads", "client_offline_manifests":
+		return col("account_id") + "=" + actor + " AND " + aclLibrarySQL(actor, aclParentLibrary("editions", col("edition_id"), write), false)
+	case "client_offline_receipts":
+		return col("account_id") + "=" + actor
 	case "edition_user_states", "reading_states", "reading_sessions", "reading_state_requests":
 		return col("account_id") + "=" + actor + " AND " + aclLibrarySQL(actor, "(SELECT library_id FROM main.editions WHERE id="+col("edition_id")+")", false)
 	case "gallery_highlight_connections":

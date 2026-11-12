@@ -533,7 +533,7 @@ func (p *Pool) decodeArchiveImage(ctx context.Context, root, relative string, si
 	defer release()
 	if source != nil {
 		info, err := s.file.Stat()
-		if err != nil || !source.matches(info) {
+		if err != nil || !source.Matches(info) {
 			return nil, "", "", ErrChanged
 		}
 	}

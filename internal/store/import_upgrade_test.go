@@ -71,7 +71,7 @@ func TestImportUpgradePreservesElevenAndCheckpointFailureRollsBack(t *testing.T)
 	if !reflect.DeepEqual(before, dumpRows(t, s, "SELECT * FROM editions ORDER BY id")) {
 		t.Fatal("upgrade changed Editions")
 	}
-	if s.Version != 29 {
+	if s.Version != 30 {
 		t.Fatal(s.Version)
 	}
 	var n int
@@ -187,7 +187,7 @@ func TestImportStageDecisionUpgradeRollbackAndPersistence(t *testing.T) {
 	}
 	defer s.Close()
 	b, e := s.ImportBatch(ctx, "historical")
-	if e != nil || b.State != "completed" || b.StageDecisions["series"].JobID != "anonymous" || s.Version != 29 {
+	if e != nil || b.State != "completed" || b.StageDecisions["series"].JobID != "anonymous" || s.Version != 30 {
 		t.Fatal(b, e)
 	}
 	// A persisted decision without a matching current attempt cannot bypass a gate.

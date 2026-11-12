@@ -100,7 +100,7 @@ func TestSeriesIdentityUpgradePreservesLegacyKeysAndRollsBack(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer s.Close()
-	if s.Version != 29 {
+	if s.Version != 30 {
 		t.Fatal(s.Version)
 	}
 	after, _ := filepath.Glob(filepath.Join(dir, "upgrade-snapshots", "*.sqlite"))
