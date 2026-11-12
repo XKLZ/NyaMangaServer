@@ -1,14 +1,12 @@
 package httpapi
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"nyamangaserver.local/server/internal/comic"
 	"nyamangaserver.local/server/internal/library"
@@ -432,31 +430,24 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, kind, e := h.catalog.Image(r.Context(), r.PathValue("id"), revision, index, cover)
+	if !cover {
+		if before.ContentRevision != revision {
+			h.catalogFailure(w, r, comic.ErrChanged)
+			return
+		}
+		h.servePageImage(w, r, *before, index)
+		return
+	}
+	data, kind, e := h.catalog.Image(r.Context(), r.PathValue("id"), revision, index, true)
 	if e != nil {
 		h.catalogFailure(w, r, e)
 		return
 	}
-	if !cover {
-		current, err := h.catalog.Edition(r.Context(), before.ID)
-		if err != nil {
-			h.catalogFailure(w, r, err)
-			return
-		}
-		if current.FileParsing.Fingerprint() != before.FileParsing.Fingerprint() {
-			h.error(w, r, 409, "parsing_changed", "页目录已变化，请刷新后重新确认位置")
-			return
-		}
-	}
-
 	serveCatalogImage(w, r, data, kind)
 }
 
 func serveCatalogImage(w http.ResponseWriter, r *http.Request, data []byte, kind string) {
-	w.Header().Set("Content-Type", kind)
-	w.Header().Set("Cache-Control", "private, no-cache")
-	w.Header().Set("ETag", fmt.Sprintf("\"%x\"", sha256.Sum256(data)))
-	http.ServeContent(w, r, "image", time.Time{}, bytes.NewReader(data))
+	serveImageBytes(w, r, data, kind, fmt.Sprintf("\"%x\"", sha256.Sum256(data)))
 }
 
 func (h *Handler) imageLimitFailure(w http.ResponseWriter, r *http.Request, status int, code string, e error) {

@@ -62,13 +62,14 @@ type session struct {
 	touched       time.Time
 }
 type Pool struct {
-	manifestBytes int64
-	mu            sync.Mutex
-	entries       map[string]*session
-	changed       chan struct{}
-	closed        bool
-	imageSlots    chan struct{}
-	budget        *Budget
+	manifestBytes    int64
+	mu               sync.Mutex
+	entries          map[string]*session
+	changed          chan struct{}
+	closed           bool
+	imageSlots       chan struct{}
+	budget           *Budget
+	beforePageDecode func(context.Context, PageKey) // deterministic tests
 }
 
 func NewPool() *Pool {
@@ -82,6 +83,9 @@ func NewPoolWithBudget(b *Budget) *Pool {
 }
 func (p *Pool) signal() { close(p.changed); p.changed = make(chan struct{}) }
 func (p *Pool) Sweep(now time.Time) {
+	p.budget.mu.Lock()
+	p.budget.sweepPagesLocked(now)
+	p.budget.mu.Unlock()
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	for key, s := range p.entries {
@@ -494,6 +498,19 @@ func (b *limitedBuffer) Write(p []byte) (int, error) {
 	}
 	return b.Buffer.Write(p)
 }
+
+type contextWriter struct {
+	ctx context.Context
+	w   io.Writer
+}
+
+func (w contextWriter) Write(data []byte) (int, error) {
+	if e := w.ctx.Err(); e != nil {
+		return 0, e
+	}
+	return w.w.Write(data)
+}
+
 func (p *Pool) Image(ctx context.Context, root, relative string, size, mtime int64, entry int, cover bool) ([]byte, string, string, error) {
 	select {
 	case p.imageSlots <- struct{}{}:
@@ -501,11 +518,21 @@ func (p *Pool) Image(ctx context.Context, root, relative string, size, mtime int
 		return nil, "", "", ctx.Err()
 	}
 	defer func() { <-p.imageSlots }()
+	return p.decodeArchiveImage(ctx, root, relative, size, mtime, entry, cover, nil, nil)
+}
+
+func (p *Pool) decodeArchiveImage(ctx context.Context, root, relative string, size, mtime int64, entry int, cover bool, source *SourceIdentity, retain func(*imageMemory, []byte, string) error) ([]byte, string, string, error) {
 	s, release, e := p.acquire(ctx, root, relative, size, mtime)
 	if e != nil {
 		return nil, "", "", e
 	}
 	defer release()
+	if source != nil {
+		info, err := s.file.Stat()
+		if err != nil || !source.matches(info) {
+			return nil, "", "", ErrChanged
+		}
+	}
 	if entry < 0 || entry >= len(s.reader.File) {
 		return nil, "", "", ErrImage
 	}
@@ -529,17 +556,20 @@ func (p *Pool) Image(ctx context.Context, root, relative string, size, mtime int
 	if format != "jpeg" && format != "png" && format != "webp" && format != "gif" && format != "bmp" {
 		return nil, "", "", ErrImage
 	}
-	free, e := p.reserve(ctx, int64(f.UncompressedSize64)*2+pixels*12+1<<20)
+	memory, e := p.budget.reserveMemory(ctx, int64(f.UncompressedSize64)*2+pixels*12+1<<20)
 	if e != nil {
 		return nil, "", "", e
 	}
-	defer free()
+	defer memory.release()
 	reader, e = f.Open()
 	if e != nil {
 		return nil, "", "", ErrImage
 	}
 	raw, e := io.ReadAll(contextReader{ctx, io.LimitReader(reader, int64(f.UncompressedSize64)+1)})
 	reader.Close()
+	if ctx.Err() != nil {
+		return nil, "", "", ctx.Err()
+	}
 	if e != nil || uint64(len(raw)) != f.UncompressedSize64 {
 		return nil, "", "", ErrImage
 	}
@@ -573,10 +603,21 @@ func (p *Pool) Image(ctx context.Context, root, relative string, size, mtime int
 	}
 	if cover || format == "gif" || format == "bmp" {
 		var out limitedBuffer
-		if e = png.Encode(&out, decoded); e != nil {
+		if e = png.Encode(contextWriter{ctx, &out}, decoded); e != nil {
+			if ctx.Err() != nil {
+				return nil, "", "", ctx.Err()
+			}
 			return nil, "", "", ErrLimit
 		}
-		return out.Bytes(), "image/png", hash, nil
+		raw, kind = out.Bytes(), "image/png"
+	}
+	if e = ctx.Err(); e != nil {
+		return nil, "", "", e
+	}
+	if retain != nil {
+		if e = retain(memory, raw, kind); e != nil {
+			return nil, "", "", e
+		}
 	}
 	return raw, kind, hash, nil
 }

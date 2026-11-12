@@ -148,12 +148,5 @@ func (h *Handler) clientPageImage(w http.ResponseWriter, r *http.Request) {
 		h.catalogFailure(w, r, model.ErrNotFound)
 		return
 	}
-	data, kind, e := h.catalog.Image(r.Context(), b.ID, b.ContentRevision, int(index)+1, false)
-	if e != nil {
-		h.catalogFailure(w, r, e)
-		return
-	}
-	if h.clientEditionStillCurrent(w, r, b) {
-		serveCatalogImage(w, r, data, kind)
-	}
+	h.servePageImage(w, r, *b, int(index)+1)
 }
