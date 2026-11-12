@@ -21,6 +21,7 @@ func (h *Handler) WithOrganization(o *organization.Service, s *search.Service, u
 	h.search = s
 	h.userstate = u
 	h.readingRoutes(h.protected)
+	h.offlineOperationRoutes(h.protected)
 	h.protected.HandleFunc(clientWorkSearchPath, h.method("POST", h.clientWorkSearch))
 	p := h.protected
 	p.HandleFunc("/api/v1/books/search", h.method("POST", h.searchBooks))

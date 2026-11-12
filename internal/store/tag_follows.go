@@ -20,6 +20,19 @@ func (s *Store) SetTagFollow(ctx context.Context, account, id string, expected i
 		return out, e
 	}
 	defer tx.Rollback()
+	out, e = setTagFollow(ctx, tx, account, id, expected, followed)
+	if e != nil {
+		return out, e
+	}
+	return out, tx.Commit()
+}
+
+func setTagFollow(ctx context.Context, tx *sql.Tx, account, id string, expected int64, followed bool) (model.TagFollow, error) {
+	out := model.TagFollow{TagID: id}
+	if expected < 0 || expected == math.MaxInt64 {
+		return out, model.ErrInput
+	}
+	var e error
 	var found string
 	if e = scopeRow(ctx, tx, "SELECT id FROM accounts WHERE id=?", account).Scan(&found); e != nil {
 		if e == sql.ErrNoRows {
@@ -38,7 +51,7 @@ func (s *Store) SetTagFollow(ctx context.Context, account, id string, expected i
 		return out, model.ErrTagFollowConflict
 	}
 	if followed == out.Followed {
-		return out, tx.Commit()
+		return out, nil
 	}
 	if out.Revision == math.MaxInt64 {
 		return out, model.ErrTagFollowConflict
@@ -62,7 +75,7 @@ func (s *Store) SetTagFollow(ctx context.Context, account, id string, expected i
 	if _, e = tx.ExecContext(ctx, `INSERT INTO events(type,resource_id,revision,created_at,owner_account_id) VALUES('tag_follow',?,?,unixepoch(),?)`, id, out.Revision, account); e != nil {
 		return out, e
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 func tagFollowSnapshot(ctx context.Context, q queryer, snapshot string) (string, error) {
 	account := model.TagAccount(ctx)

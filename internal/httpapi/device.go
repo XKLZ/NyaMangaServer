@@ -14,6 +14,8 @@ const deviceRenewPath = deviceSessionsPath + "/current/renew"
 
 // A device gets only these exact methods and registered handler patterns.
 var deviceRoutes = map[string]map[string]bool{
+	offlineOperationsPath:                            {"POST": true},
+	offlineOperationStatusPath:                       {"POST": true},
 	manifestCreatePath:                               {"POST": true},
 	manifestGetPath:                                  {"GET": true},
 	manifestPagesPath:                                {"GET": true},

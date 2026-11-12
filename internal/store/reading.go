@@ -139,37 +139,48 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 		return model.ReadingState{}, e
 	}
 	defer tx.Rollback()
+	out, e := writeReadingState(ctx, tx, account, id, in, time.Now().Unix(), false)
+	if e != nil {
+		return out, e
+	}
+	return out, tx.Commit()
+}
+
+func writeReadingState(ctx context.Context, tx *sql.Tx, account, id string, in model.ReadingWrite, now int64, offline bool) (model.ReadingState, error) {
 	rev, total, e := readingFile(ctx, tx, id)
 	if e != nil {
 		return model.ReadingState{}, e
 	}
 	var out model.ReadingState
-	raw, _ := json.Marshal(in)
-	hash := fmt.Sprintf("%x", sha256.Sum256(raw))
-	var previousHash, response string
-	e = scopeRow(ctx, tx, "SELECT request_hash,response_json FROM reading_state_requests WHERE account_id=? AND edition_id=? AND idempotency_key=?", account, id, in.IdempotencyKey).Scan(&previousHash, &response)
-	if e == nil {
-		if previousHash != hash {
-			return out, model.ErrReadingIdempotency
+	var hash string
+	if !offline {
+		raw, _ := json.Marshal(in)
+		hash = fmt.Sprintf("%x", sha256.Sum256(raw))
+		var previousHash, response string
+		e = scopeRow(ctx, tx, "SELECT request_hash,response_json FROM reading_state_requests WHERE account_id=? AND edition_id=? AND idempotency_key=?", account, id, in.IdempotencyKey).Scan(&previousHash, &response)
+		if e == nil {
+			if previousHash != hash {
+				return out, model.ErrReadingIdempotency
+			}
+			if e = json.Unmarshal([]byte(response), &out); e != nil {
+				return out, e
+			}
+			out.CurrentContentRevision = rev
+			out.CurrentPageCount = total
+			out.CurrentParsingRevision, e = currentParsing(ctx, tx, id)
+			if e != nil {
+				return out, e
+			}
+			if out.ParsingRevision == 0 {
+				out.ParsingRevision = 1
+			}
+			out.ParsingStale = out.ParsingRevision != out.CurrentParsingRevision
+			out.Stale = out.ContentRevision != rev || out.ParsingStale
+			return out, nil
 		}
-		if e = json.Unmarshal([]byte(response), &out); e != nil {
+		if e != sql.ErrNoRows {
 			return out, e
 		}
-		out.CurrentContentRevision = rev
-		out.CurrentPageCount = total
-		out.CurrentParsingRevision, e = currentParsing(ctx, tx, id)
-		if e != nil {
-			return out, e
-		}
-		if out.ParsingRevision == 0 {
-			out.ParsingRevision = 1
-		}
-		out.ParsingStale = out.ParsingRevision != out.CurrentParsingRevision
-		out.Stale = out.ContentRevision != rev || out.ParsingStale
-		return out, tx.Commit()
-	}
-	if e != sql.ErrNoRows {
-		return out, e
 	}
 	out, e = readingState(ctx, tx, account, id, rev, total)
 	if e != nil {
@@ -197,7 +208,6 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 			return out, model.ErrReadingContent
 		}
 	}
-	now := time.Now().Unix()
 	if in.PageIndex != nil {
 		if total == nil {
 			return out, model.ErrReadingUnknownPages
@@ -212,7 +222,7 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 			return out, model.ErrInput
 		}
 		out.PageIndex = in.PageIndex
-		out.LastReadAt = &now
+		setReadingActivity(&out, now, offline)
 	case "complete":
 		if in.PageIndex != nil {
 			out.PageIndex = in.PageIndex
@@ -221,7 +231,7 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 			out.Completed = true
 			out.CompletedAt = &now
 		}
-		out.LastReadAt = &now
+		setReadingActivity(&out, now, offline)
 	case "uncomplete":
 		if in.PageIndex != nil {
 			return out, model.ErrInput
@@ -239,7 +249,7 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 		if in.PageIndex != nil {
 			return out, model.ErrInput
 		}
-		out.LastReadAt = &now
+		setReadingActivity(&out, now, offline)
 	case "confirm_content":
 		if !in.AcceptContentChange || in.PageIndex != nil {
 			return out, model.ErrInput
@@ -254,22 +264,23 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 	if e = saveReading(ctx, tx, account, out, in.Expected); e != nil {
 		return out, e
 	}
-	raw, _ = json.Marshal(out)
-	if _, e = tx.ExecContext(ctx, "INSERT INTO reading_state_requests VALUES(?,?,?,?,?)", account, id, in.IdempotencyKey, hash, string(raw)); e != nil {
-		return out, e
+	if !offline {
+		raw, _ := json.Marshal(out)
+		if _, e = tx.ExecContext(ctx, "INSERT INTO reading_state_requests VALUES(?,?,?,?,?)", account, id, in.IdempotencyKey, hash, string(raw)); e != nil {
+			return out, e
+		}
 	}
-	return out, tx.Commit()
+	return out, nil
 }
+
+func setReadingActivity(v *model.ReadingState, now int64, offline bool) {
+	if !offline || v.LastReadAt == nil || now > *v.LastReadAt {
+		v.LastReadAt = &now
+	}
+}
+
 func (s *Store) StartReadingSession(ctx context.Context, id string, in model.ReadingSessionStart) (model.ReadingSession, error) {
 	var out model.ReadingSession
-	intent := in.Intent
-	if intent == "" {
-		intent = model.ReadingStart
-	}
-	if intent != model.ReadingStart && (intent != model.ReadingRestart || s.Version < 29) {
-		return out, model.ErrInput
-	}
-
 	account, e := readingAccount(ctx)
 	if e != nil {
 		return out, e
@@ -279,6 +290,23 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 		return out, e
 	}
 	defer tx.Rollback()
+	out, e = s.startReadingSession(ctx, tx, account, id, in, time.Now().Unix(), false)
+	if e != nil {
+		return out, e
+	}
+	return out, tx.Commit()
+}
+
+func (s *Store) startReadingSession(ctx context.Context, tx *sql.Tx, account, id string, in model.ReadingSessionStart, now int64, offline bool) (model.ReadingSession, error) {
+	var out model.ReadingSession
+	intent := in.Intent
+	if intent == "" {
+		intent = model.ReadingStart
+	}
+	if intent != model.ReadingStart && (intent != model.ReadingRestart || s.Version < 29) {
+		return out, model.ErrInput
+	}
+
 	rev, total, e := readingFile(ctx, tx, id)
 	if e != nil {
 		return out, e
@@ -308,7 +336,7 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 		if e != nil {
 			return out, e
 		}
-		return out, tx.Commit()
+		return out, nil
 	}
 	if e != sql.ErrNoRows {
 		return out, e
@@ -336,10 +364,10 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 	if e != nil {
 		return out, e
 	}
-	out.StartedAt = time.Now().Unix()
+	out.StartedAt = now
 	out.ContentRevision = rev
 	out.State.ReadCount++
-	out.State.LastReadAt = &out.StartedAt
+	setReadingActivity(&out.State, now, offline)
 	out.State.Revision++
 	if e = saveReading(ctx, tx, account, out.State, in.Expected); e != nil {
 		return out, e
@@ -349,7 +377,7 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 			out.ID, account, id, in.IdempotencyKey, rev, out.StartedAt, out.State.ParsingRevision, intent); e != nil {
 			return out, e
 		}
-		return out, tx.Commit()
+		return out, nil
 	}
 	if _, e = tx.ExecContext(ctx, "INSERT INTO reading_sessions(id,account_id,edition_id,idempotency_key,content_revision,started_at) VALUES(?,?,?,?,?,?)", out.ID, account, id, in.IdempotencyKey, rev, out.StartedAt); e != nil {
 		return out, e
@@ -359,7 +387,7 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 			return out, e
 		}
 	}
-	return out, tx.Commit()
+	return out, nil
 }
 
 // Hydrate the page in one query. GET/list never create reading sessions or rows.
