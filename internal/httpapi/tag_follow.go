@@ -8,8 +8,7 @@ import (
 )
 
 func tagReadContext(r *http.Request) context.Context {
-	v := r.Context().Value(sessionKey{}).(identity)
-	return model.WithTagAccount(r.Context(), v.session.AccountID)
+	return model.WithTagAccount(r.Context(), accountID(r))
 }
 func (h *Handler) tagFollow(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" && r.Method != "DELETE" {
@@ -31,8 +30,7 @@ func (h *Handler) tagFollow(w http.ResponseWriter, r *http.Request) {
 		h.error(w, r, 400, "invalid_tag_follow", "关注版本无效")
 		return
 	}
-	who := r.Context().Value(sessionKey{}).(identity)
-	out, e := h.tagCatalog.Follow(r.Context(), who.session.AccountID, r.PathValue("id"), *in.Expected, r.Method == "PUT")
+	out, e := h.tagCatalog.Follow(r.Context(), accountID(r), r.PathValue("id"), *in.Expected, r.Method == "PUT")
 	switch {
 	case errors.Is(e, model.ErrInput):
 		h.error(w, r, 400, "invalid_tag_follow", "关注版本或标签参数无效")

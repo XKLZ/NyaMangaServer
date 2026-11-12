@@ -76,7 +76,7 @@ func TestPropertyUpgradeCheckpointAndPreservation(t *testing.T) {
 	}
 	_ = db.QueryRow("SELECT count(*) FROM effective_edition_properties").Scan(&count)
 	_ = db.QueryRow("SELECT max(version) FROM schema_migrations").Scan(&version)
-	if ready != 0 || count != 500 || version != 27 || last == "" {
+	if ready != 0 || count != 500 || version != len(interrupted) || last == "" {
 		t.Fatal(ready, count, version, last)
 	}
 	if _, e = db.Exec("DROP TRIGGER interrupt_projection"); e != nil {

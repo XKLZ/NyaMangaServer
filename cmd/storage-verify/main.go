@@ -12,6 +12,7 @@ import (
 	"nyamangaserver.local/server/internal/maintenance"
 	"nyamangaserver.local/server/internal/model"
 	"nyamangaserver.local/server/internal/store"
+	"nyamangaserver.local/server/migrations"
 	"os"
 	"syscall"
 	"time"
@@ -36,7 +37,7 @@ func run() error {
 	defer lock.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
 	defer cancel()
-	assets, e := store.MigrationOriginalAssets(ctx, c.DataDir)
+	assets, e := store.MigrationOriginalAssets(ctx, c.DataDir, migrations.Files)
 	if e != nil {
 		return e
 	}

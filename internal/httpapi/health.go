@@ -140,11 +140,11 @@ func (h *Handler) healthAdmission(w http.ResponseWriter, r *http.Request) (func(
 	}
 	if r.Method == "POST" {
 		switch path {
-		case "/api/v1/books/search", "/api/v1/editions/search", "/api/v1/admin/books/search", "/api/v1/admin/editions/search", "/api/v1/tag-suggestions":
+		case "/api/v1/books/search", "/api/v1/editions/search", "/api/v1/admin/books/search", "/api/v1/admin/editions/search", "/api/v1/tag-suggestions", clientWorkSearchPath, offlineCheckPath, offlineOperationStatusPath:
 			return func() {}, true
 		}
 	}
-	if strings.HasPrefix(path, "/api/v1/maintenance/health-") || path == "/api/v1/auth/logout" {
+	if strings.HasPrefix(path, "/api/v1/maintenance/health-") || path == "/api/v1/auth/logout" && r.Header.Get("Authorization") == "" {
 		return func() {}, true
 	}
 	if r.Method == "POST" && strings.HasPrefix(path, "/api/v1/jobs/") {

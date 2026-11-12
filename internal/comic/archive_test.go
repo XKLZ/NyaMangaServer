@@ -20,6 +20,8 @@ import (
 
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/encoding/simplifiedchinese"
+
+	"golang.org/x/image/bmp"
 )
 
 type entry struct {
@@ -41,6 +43,8 @@ func picture(t *testing.T, kind string) []byte {
 		e = jpeg.Encode(&b, img, nil)
 	case "gif":
 		e = gif.Encode(&b, img, nil)
+	case "bmp":
+		e = bmp.Encode(&b, img)
 	}
 	if e != nil {
 		t.Fatal(e)

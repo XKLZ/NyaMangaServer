@@ -6,6 +6,8 @@ import (
 )
 
 type Repository interface {
+	ApplyOfflineOperation(context.Context, model.OfflineQueue, model.OfflineOperation, int64) (model.OfflineOperationResult, error)
+	OfflineOperationStatus(context.Context, model.OfflineQueue, []string) ([]model.OfflineOperationResult, error)
 	ReadingState(context.Context, string) (model.ReadingState, error)
 	WriteReadingState(context.Context, string, model.ReadingWrite) (model.ReadingState, error)
 	StartReadingSession(context.Context, string, model.ReadingSessionStart) (model.ReadingSession, error)

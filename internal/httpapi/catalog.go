@@ -1,14 +1,12 @@
 package httpapi
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"nyamangaserver.local/server/internal/comic"
 	"nyamangaserver.local/server/internal/library"
@@ -16,6 +14,11 @@ import (
 )
 
 func (h *Handler) catalogRoutes(m *http.ServeMux) {
+	h.downloadRoutes(m)
+	h.manifestRoutes(m)
+	m.HandleFunc(clientContextPath, h.method("GET", h.clientReadingContext))
+	m.HandleFunc(clientPagesPath, h.method("GET", h.clientPages))
+	m.HandleFunc(clientImagePath, h.method("GET", h.clientPageImage))
 	m.HandleFunc("/api/v1/libraries", h.libraries)
 	m.HandleFunc("/api/v1/libraries/{id}", h.method("PATCH", h.patchLibrary))
 	m.HandleFunc("/api/v1/libraries/{id}/scans", h.method("POST", h.startScan))
@@ -40,6 +43,8 @@ func (h *Handler) catalogFailure(w http.ResponseWriter, r *http.Request, e error
 		return
 	}
 	switch {
+	case errors.Is(e, comic.ErrImageBusy):
+		h.imageBusy(w, r, http.StatusServiceUnavailable)
 	case errors.Is(e, model.ErrDisabled):
 		h.error(w, r, 409, "library_disabled", "书库已停用")
 	case errors.Is(e, model.ErrTrashed):
@@ -78,6 +83,16 @@ func (h *Handler) libraries(w http.ResponseWriter, r *http.Request) {
 		v, e := h.catalog.Libraries(r.Context())
 		if e != nil {
 			h.catalogFailure(w, r, e)
+			return
+		}
+		if _, device := model.DeviceActor(r.Context()); device {
+			items := make([]deviceLibrary, 0, len(v))
+			for _, l := range v {
+				if l.TrashedAt == nil {
+					items = append(items, deviceLibrary{ID: l.ID, DisplayName: l.Name, Disabled: l.Disabled, Availability: h.catalog.Availability(l)})
+				}
+			}
+			h.json(w, 200, map[string]any{"items": items})
 			return
 		}
 		for i := range v {
@@ -407,6 +422,11 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	r, release, ok := h.admitImage(w, r)
+	if !ok {
+		return
+	}
+	defer release()
 	var before *model.Edition
 	if !cover {
 		before, e = h.catalog.Edition(r.Context(), r.PathValue("id"))
@@ -419,27 +439,30 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, kind, e := h.catalog.Image(r.Context(), r.PathValue("id"), revision, index, cover)
+	if !cover {
+		if before.ContentRevision != revision {
+			h.catalogFailure(w, r, comic.ErrChanged)
+			return
+		}
+		h.servePageImage(w, r, *before, index, true, "")
+		return
+	}
+	data, kind, e := h.catalog.Image(r.Context(), r.PathValue("id"), revision, index, true)
 	if e != nil {
 		h.catalogFailure(w, r, e)
 		return
 	}
-	if !cover {
-		current, err := h.catalog.Edition(r.Context(), before.ID)
-		if err != nil {
-			h.catalogFailure(w, r, err)
-			return
-		}
-		if current.FileParsing.Fingerprint() != before.FileParsing.Fingerprint() {
-			h.error(w, r, 409, "parsing_changed", "页目录已变化，请刷新后重新确认位置")
-			return
-		}
+	free, e := h.catalog.Pool.ReserveResponse(r.Context(), data)
+	if e != nil {
+		h.catalogFailure(w, r, e)
+		return
 	}
+	defer free()
+	serveCatalogImage(w, r, data, kind)
+}
 
-	w.Header().Set("Content-Type", kind)
-	w.Header().Set("Cache-Control", "private, no-cache")
-	w.Header().Set("ETag", fmt.Sprintf("\"%x\"", sha256.Sum256(data)))
-	http.ServeContent(w, r, "image", time.Time{}, bytes.NewReader(data))
+func serveCatalogImage(w http.ResponseWriter, r *http.Request, data []byte, kind string) {
+	serveImageBytes(w, r, data, kind, fmt.Sprintf("\"%x\"", sha256.Sum256(data)))
 }
 
 func (h *Handler) imageLimitFailure(w http.ResponseWriter, r *http.Request, status int, code string, e error) {

@@ -50,6 +50,9 @@ func PrepareInstanceDatabase(ctx context.Context, path, id, request string, root
 			return e
 		}
 	}
+	if e = invalidateClientInstance(ctx, tx); e != nil {
+		return e
+	}
 	var phase string
 	if e = tx.QueryRowContext(ctx, "SELECT phase FROM health_state WHERE singleton=1").Scan(&phase); e != nil {
 		return e
@@ -198,10 +201,10 @@ func FinishInstanceRollback(ctx context.Context, dir, id string) error {
 	} else if e != nil {
 		return e
 	}
-	if _, e := os.Lstat(filepath.Join(dir, "health-write-unsafe")); e == nil {
-		return nil
-	} else if !os.IsNotExist(e) {
-		return e
+	_, markerErr := os.Lstat(filepath.Join(dir, "health-write-unsafe"))
+	poisoned := markerErr == nil
+	if markerErr != nil && !os.IsNotExist(markerErr) {
+		return markerErr
 	}
 	u := url.URL{Scheme: "file", Path: path}
 	q := u.Query()
@@ -239,13 +242,19 @@ func FinishInstanceRollback(ctx context.Context, dir, id string) error {
 			return nil
 		}
 	}
+	var hasClientIdentity bool
+	if e = read.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='instance_client_identity')").Scan(&hasClientIdentity); e != nil {
+		read.Close()
+		return e
+	}
 	read.Close()
 	if owner != nil && *owner != id {
 		return model.ErrInstanceRecovery
 	}
-	if owner == nil && phase != "idle" {
+	preserveProtection := poisoned || owner == nil && phase != "idle"
+	if preserveProtection && !hasClientIdentity {
 		return nil
-	} // prior unhealthy target stays prior unhealthy
+	}
 	q.Set("mode", "rw")
 	u.RawQuery = q.Encode()
 	db, e := sql.Open("sqlite", u.String())
@@ -273,7 +282,10 @@ func FinishInstanceRollback(ctx context.Context, dir, id string) error {
 	if _, e = tx.ExecContext(ctx, "DELETE FROM sessions"); e != nil {
 		return e
 	}
-	if owner != nil {
+	if e = invalidateClientInstance(ctx, tx); e != nil {
+		return e
+	}
+	if owner != nil && !preserveProtection {
 		if _, e = tx.ExecContext(ctx, "UPDATE instance_state SET owner=NULL,revision=revision+1 WHERE singleton=1 AND owner=?", id); e != nil {
 			return e
 		}

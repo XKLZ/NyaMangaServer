@@ -79,6 +79,7 @@ os.chown(root,65532,65532);os.chmod(root,0o700)
             subprocess.run(command + ['up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '120'], env=environment, check=True)
             if index == 0:
                 run('beta-api.py', '--url', origin, '--token-file', path / 'setup-token', '--evidence', evidence, '--image', path / 'foreground.png')
+                run('beta-client.py', '--url', origin, '--evidence', evidence)
                 run('beta-recovery.py', 'backup', '--url', origin, '--evidence', evidence)
             else:
                 run('beta-recovery.py', 'prepare', '--url', origin, '--evidence', evidence, '--target-token', path / 'setup-token')
@@ -86,6 +87,7 @@ os.chown(root,65532,65532);os.chmod(root,0o700)
                 subprocess.run(command + ['up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '120'], env=environment, check=True)
                 run('beta-recovery.py', 'verify', '--url', origin, '--evidence', evidence)
                 run('beta-recovery.py', 'verify-write-barrier', '--url', origin, '--evidence', evidence)
+                run('beta-client.py', '--url', origin, '--evidence', evidence, '--restored')
             subprocess.run(command + ['stop', 'server'], env=environment, check=True)
         print('PASS exact AMD64 image, anonymous API, isolated standard restore and write barrier')
     finally:

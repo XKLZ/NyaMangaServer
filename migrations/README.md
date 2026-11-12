@@ -57,3 +57,11 @@ M3 追加 [002_metadata.sql](002_metadata.sql)，共 23 表。来源／覆盖／
 024_instance_recovery.sql新增instance_operations／instance_state／instance_root_links三表及操作通知，源码schema24／106表。001–023保持原字节及账本；无既有业务回填，不恢复或执行任务。主库外恢复日志在普通Store.Open前持锁激活，空／旧／坏目标不先迁移。日常024未应用，见[备份恢复](../docs/backup-restore.md)。
 
 025_accounts_authorization.sql扩展账号集合、逐库ACL／无秘密审计及持久后台身份，保留原管理员ID／摘要／session和原列；原singleton仅为历史槽位。父表重建在固定迁移连接暂关FK，事务内foreign_key_check及账号集合校验，结束恢复并核验FK。旧jobs／批次actor回填不改状态，不产生迁移通知；事件追加库归属及个人状态owner。周期扫描及增强transition绑定操作者。026_reading_state.sql新增个人阅读状态／会话／幂等请求，永久删除Edition级联清除。001–024字节与checksum保持；最终源码schema26／112表，日常仍schema24，首次实际升级由主对话协调。匿名24→25→26保留／回滚／重开及功能证据见[数据兼容](../docs/data-compatibility.md)。
+
+
+[028_client_foundation.sql](028_client_foundation.sql)新增设备会话与逻辑实例身份／缓存世代。保持001–027原字节和账本，现有账号、网页会话、书库和个人资料不回填、不重建。设备凭证从新登录产生。恢复和回退激活清除设备会话并刷新缓存世代。源码升级验证使用匿名27→28数据库，已发布schema27的恢复包继续要求原构建与账本。见[客户端协议](../docs/client-foundation.md)。
+
+[029_reading_session_intent.sql](029_reading_session_intent.sql)为阅读会话增加受约束的 `intent`，旧行默认 `start`，保留会话身份、幂等键和阅读历史。新 `restart` 由服务在同一事务创建会话并重置位置与完成状态。001–028 原字节和账本保持。参见[阅读同步契约](../docs/client-foundation.md#阅读写入继续与重新开始)。
+
+
+[030_offline_client.sql](030_offline_client.sql)增加原文件下载准备、离线清单身份及个人操作回执。回执保留请求摘要、前置关系、收件时间与有效阅读事件时间。001–029 保持原字节和账本，原阅读状态和会话沿用。三张表随一致性备份保留，激活后旧世代记录隔离。见[下载与离线协议](../docs/client-offline.md)。

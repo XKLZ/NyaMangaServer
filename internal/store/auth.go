@@ -164,15 +164,24 @@ func (s *Store) ChangePassword(ctx context.Context, a Account, newHash string, n
 			return e
 		}
 	}
+	if s.Version >= 28 {
+		if e = revokeAccountDevices(ctx, tx, a.ID, now); e != nil {
+			return e
+		}
+	}
 	return tx.Commit()
 }
 
 func (s *Store) accountGrants(ctx context.Context, a *Account, e error) (*Account, error) {
+	return accountGrantsFrom(ctx, s.Read, a, e)
+}
+
+func accountGrantsFrom(ctx context.Context, q queryer, a *Account, e error) (*Account, error) {
 	if e != nil || a == nil {
 		return a, e
 	}
 	a.LibraryGrants = map[string]string{}
-	rows, e := s.Read.QueryContext(ctx, "SELECT library_id,role FROM account_library_grants WHERE account_id=? ORDER BY library_id", a.ID)
+	rows, e := q.QueryContext(ctx, "SELECT library_id,role FROM account_library_grants WHERE account_id=? ORDER BY library_id", a.ID)
 	if e != nil {
 		return nil, e
 	}

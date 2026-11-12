@@ -36,26 +36,31 @@ type activeScan struct {
 	cancel context.CancelFunc
 }
 type Service struct {
-	closed   bool
-	store    Repository
-	Config   config.Config
-	Pool     *comic.Pool
-	Logger   *slog.Logger
-	mu       sync.Mutex
-	active   map[string]activeScan
-	wake     chan struct{}
-	slots    chan struct{}
-	cache    *imagecache.Cache
-	cacheDir string
-	cancel   context.CancelFunc
-	done     chan struct{}
+	downloadWake   chan struct{}
+	downloadMu     sync.Mutex
+	downloadID     string
+	downloadCancel context.CancelFunc
+	closed         bool
+	store          Repository
+	Config         config.Config
+	Pool           *comic.Pool
+	Logger         *slog.Logger
+	mu             sync.Mutex
+	active         map[string]activeScan
+	wake           chan struct{}
+	slots          chan struct{}
+	cache          *imagecache.Cache
+	cacheDir       string
+	cancel         context.CancelFunc
+	done           chan struct{}
 	// BeforePublish is only a deterministic test synchronization hook.
-	BeforePublish func(context.Context, model.Job, model.Item)
+	BeforePublish       func(context.Context, model.Job, model.Item)
+	beforeDownloadBlock func(context.Context) // deterministic tests
 }
 
 func New(s Repository, c config.Config, logger *slog.Logger) *Service {
 	maxBytes, maxFiles := c.CoverCache.Limits()
-	return &Service{store: s, Config: c, Pool: comic.NewPoolWithBudget(comic.NewBudget(c.ImageMemoryMiB << 20)), Logger: logger, active: map[string]activeScan{}, wake: make(chan struct{}, 1), slots: make(chan struct{}, 2), cacheDir: filepath.Join(c.DataDir, "cache", "covers", "v1"), cache: imagecache.New(filepath.Join(c.DataDir, "cache", "covers", "v1"), maxBytes, maxFiles)}
+	return &Service{downloadWake: make(chan struct{}, 1), store: s, Config: c, Pool: comic.NewPoolWithBudget(comic.NewBudget(c.ImageMemoryMiB << 20)), Logger: logger, active: map[string]activeScan{}, wake: make(chan struct{}, 1), slots: make(chan struct{}, 2), cacheDir: filepath.Join(c.DataDir, "cache", "covers", "v1"), cache: imagecache.New(filepath.Join(c.DataDir, "cache", "covers", "v1"), maxBytes, maxFiles)}
 }
 func (s *Service) Wake() {
 	select {
@@ -100,6 +105,7 @@ func (s *Service) run(ctx context.Context) {
 	defer ticker.Stop()
 	var workers sync.WaitGroup
 	defer workers.Wait()
+	workers.Go(func() { s.runDownloads(ctx) })
 	for {
 		if ctx.Err() != nil {
 			return

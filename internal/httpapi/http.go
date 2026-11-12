@@ -42,13 +42,18 @@ type sessionKey struct{}
 type identity struct {
 	raw     string
 	session *model.Session
+	device  *model.DeviceSession
 }
 type attempt struct {
 	start time.Time
 	count int
 }
 type Handler struct {
-	requestTimeout                    time.Duration // test injection; zero retains ordinary 30s
+	downloads                         downloadRequests
+	pageRequests                      imageRequests
+	imageWait                         time.Duration         // deterministic test override
+	beforeImageResponse               func(context.Context) // deterministic authorization race tests
+	requestTimeout                    time.Duration         // test injection; zero retains ordinary 30s
 	instanceTransfers                 bool
 	health                            *healthHTTP
 	startedAt                         time.Time
@@ -94,6 +99,9 @@ func New(c config.Config, svc *auth.Service, assets fs.FS, logger *slog.Logger, 
 		h.catalogRoutes(protected)
 	}
 	h.accountRoutes(protected)
+	h.registerDeviceRoutes()
+	h.mux.HandleFunc(clientServerInfoPath, h.method("GET", h.clientServerInfo))
+	protected.HandleFunc(clientCapabilitiesPath, h.method("GET", h.clientCapabilities))
 	protected.HandleFunc("/api/v1/auth/session", h.method("GET", h.session))
 	protected.HandleFunc("/api/v1/auth/logout", h.method("POST", h.logout))
 	protected.HandleFunc("/api/v1/auth/password", h.method("PUT", h.password))
@@ -158,13 +166,21 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.logger.Info("request", "request_id", id, "method", r.Method, "status", rw.status, "duration_ms", time.Since(start).Milliseconds())
 	}()
 	defer func() {
-		if recover() != nil {
+		if failure := recover(); failure != nil {
+			if failure == http.ErrAbortHandler {
+				panic(failure)
+			}
 			h.logger.Error("request panic", "request_id", id)
 			if rw.status == 0 {
 				h.error(rw, r, 500, "internal_error", "服务暂时不可用")
 			}
 		}
 	}()
+	if strings.HasPrefix(r.URL.Path, "/api/v1/") && !strings.HasPrefix(r.URL.Path, "/api/v1/gallery-highlight/") &&
+		len(r.Header.Values("Authorization")) != 0 && len(r.Header.Values("Cookie")) != 0 {
+		h.error(rw, r, 400, "mixed_credentials", "不能同时使用Cookie和Bearer凭证")
+		return
+	}
 	h.mux.ServeHTTP(rw, r)
 }
 func (h *Handler) method(method string, f http.HandlerFunc) http.HandlerFunc {
@@ -213,6 +229,11 @@ func (h *Handler) failure(w http.ResponseWriter, r *http.Request, e error) {
 		h.error(w, r, 422, "invalid_input", "输入无效")
 	case errors.Is(e, model.ErrNotFound):
 		h.error(w, r, 404, "not_found", "资源不存在")
+	case errors.Is(e, model.ErrDeviceLimit):
+		h.error(w, r, 409, "device_limit_reached", "有效设备已达上限，请撤销旧设备后再登录")
+	case errors.Is(e, model.ErrDeviceSession):
+		w.Header().Set("WWW-Authenticate", `Bearer realm="nyamangaserver-device"`)
+		h.error(w, r, 401, "unauthenticated", "设备会话无效或已过期，请重新登录")
 	case errors.Is(e, auth.ErrSession):
 		h.error(w, r, 401, "unauthenticated", "会话已过期，请重新登录")
 	case errors.Is(e, auth.ErrCredentials):
@@ -231,6 +252,10 @@ func (h *Handler) failure(w http.ResponseWriter, r *http.Request, e error) {
 	}
 }
 func (h *Handler) decode(w http.ResponseWriter, r *http.Request, v any) bool {
+	return h.decodeJSON(w, r, v, false)
+}
+
+func (h *Handler) decodeJSON(w http.ResponseWriter, r *http.Request, v any, strictObject bool) bool {
 	if media := strings.Split(r.Header.Get("Content-Type"), ";")[0]; media != "application/json" {
 		h.error(w, r, 415, "unsupported_media_type", "请使用JSON请求")
 		return false
@@ -265,6 +290,11 @@ func (h *Handler) decode(w http.ResponseWriter, r *http.Request, v any) bool {
 			}
 		}
 	}
+	if strictObject && !exactObjectKeys(raw, reflect.TypeOf(v).Elem()) {
+		h.error(w, r, 400, "invalid_request", "请求JSON字段无效或重复")
+		return false
+	}
+
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
 	e := d.Decode(v)
@@ -288,6 +318,31 @@ func (h *Handler) decode(w http.ResponseWriter, r *http.Request, v any) bool {
 	}
 	return true
 }
+func exactObjectKeys(raw []byte, target reflect.Type) bool {
+	d := json.NewDecoder(bytes.NewReader(raw))
+	if token, e := d.Token(); e != nil || token != json.Delim('{') {
+		return false
+	}
+	fields := make(map[string]bool, target.NumField())
+	for f := range target.Fields() {
+		name, _, _ := strings.Cut(f.Tag.Get("json"), ",")
+		fields[name] = true
+	}
+	for d.More() {
+		token, e := d.Token()
+		name, ok := token.(string)
+		if e != nil || !ok || !fields[name] {
+			return false
+		}
+		fields[name] = false
+		var value json.RawMessage
+		if e = d.Decode(&value); e != nil {
+			return false
+		}
+	}
+	return true
+}
+
 func (h *Handler) origin(w http.ResponseWriter, r *http.Request) bool {
 	if r.Header.Get("Origin") != h.c.PublicURL {
 		h.error(w, r, 403, "origin_rejected", "请求来源不允许")
@@ -330,6 +385,10 @@ func (h *Handler) limited(w http.ResponseWriter, r *http.Request) bool {
 }
 func (h *Handler) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if headers := r.Header.Values("Authorization"); len(headers) != 0 {
+			h.authenticateDevice(w, r, next, headers)
+			return
+		}
 		cookie, e := r.Cookie(h.cookieName())
 		if e != nil {
 			h.error(w, r, 401, "unauthenticated", "请先登录")
@@ -360,7 +419,7 @@ func (h *Handler) authenticate(next http.Handler) http.Handler {
 			return
 		}
 		r = r.WithContext(model.WithActor(r.Context(), *v.Account))
-		if v.Account.MustChangePassword && r.URL.Path != "/api/v1/auth/session" && r.URL.Path != "/api/v1/auth/password" && r.URL.Path != "/api/v1/auth/logout" {
+		if v.Account.MustChangePassword && !passwordChangeRoute(r.URL.Path) {
 			h.failure(w, r, model.ErrPasswordChangeRequired)
 			return
 		}
@@ -377,7 +436,7 @@ func (h *Handler) authenticate(next http.Handler) http.Handler {
 			defer cancel()
 			r = r.WithContext(ctx)
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), sessionKey{}, identity{cookie.Value, v})))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), sessionKey{}, identity{raw: cookie.Value, session: v})))
 	})
 }
 func (h *Handler) status(w http.ResponseWriter, r *http.Request) {
@@ -451,10 +510,22 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 }
 func (h *Handler) session(w http.ResponseWriter, r *http.Request) {
 	v := r.Context().Value(sessionKey{}).(identity)
+	if v.device != nil {
+		h.json(w, 200, map[string]any{"device": v.device, "actor": deviceActorResponse(v.device.Account)})
+		return
+	}
 	h.sessionJSON(w, v.raw, *v.session)
 }
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 	v := r.Context().Value(sessionKey{}).(identity)
+	if v.device != nil {
+		if e := h.svc.RevokeDeviceSession(r.Context(), v.device.ID); e != nil {
+			h.failure(w, r, e)
+			return
+		}
+		w.WriteHeader(204)
+		return
+	}
 	if e := h.svc.Logout(r.Context(), v.session.Hash); e != nil {
 		h.failure(w, r, e)
 		return
@@ -478,11 +549,14 @@ func (h *Handler) password(w http.ResponseWriter, r *http.Request) {
 		h.error(w, r, 400, "invalid_request", "缺少必填字段")
 		return
 	}
-	if e := h.svc.ChangePassword(r.Context(), v.session.AccountID, *in.Current, *in.Next); e != nil {
+	a, _ := model.Actor(r.Context())
+	if e := h.svc.ChangePassword(r.Context(), a.ID, *in.Current, *in.Next); e != nil {
 		h.failure(w, r, e)
 		return
 	}
-	h.clearCookie(w)
+	if v.device == nil {
+		h.clearCookie(w)
+	}
 	h.json(w, 200, map[string]bool{"reauthenticate": true})
 }
 func (h *Handler) roots(w http.ResponseWriter, r *http.Request) {

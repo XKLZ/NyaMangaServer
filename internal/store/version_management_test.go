@@ -164,7 +164,7 @@ func TestVersionManagementMigrationPreservesTenAndRollsBack(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer s.Close()
-	if s.SchemaVersion() != 27 || !reflect.DeepEqual(before, dumpRows(t, s, "SELECT * FROM editions ORDER BY id")) {
+	if s.SchemaVersion() != 30 || !reflect.DeepEqual(before, dumpRows(t, s, "SELECT * FROM editions ORDER BY id")) {
 		t.Fatal("old Editions changed")
 	}
 	var mode, label string

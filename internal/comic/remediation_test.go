@@ -88,7 +88,7 @@ func TestSharedImageBudgetAcrossPoolsCancellationAndCapacity(t *testing.T) {
 	if !errors.As(e, &detail) || detail.Actual != DefaultImageMemory+1 || detail.Limit != DefaultImageMemory || detail.Resource != "estimated_memory_bytes" {
 		t.Fatal(e)
 	}
-	if a.imageSlots != c.imageSlots {
+	if a.budget != c.budget {
 		t.Fatal("decode concurrency not shared")
 	}
 }

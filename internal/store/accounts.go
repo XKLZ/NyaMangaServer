@@ -11,6 +11,9 @@ import (
 func administrator(ctx context.Context, q interface {
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }) (string, error) {
+	if _, device := model.DeviceActor(ctx); device {
+		return "", model.ErrForbidden
+	}
 	actor, ok := model.Actor(ctx)
 	if !ok {
 		return "", model.ErrForbidden
@@ -205,6 +208,11 @@ func (s *Store) UpdateAccount(ctx context.Context, id string, in model.AccountUp
 		if _, e = tx.ExecContext(ctx, "DELETE FROM sessions WHERE account_id=?", id); e != nil {
 			return e
 		}
+		if s.Version >= 28 {
+			if e = revokeAccountDevices(ctx, tx, id, now); e != nil {
+				return e
+			}
+		}
 		if _, e = tx.ExecContext(ctx, "UPDATE gallery_highlight_connections SET revoked_at=?,revision=revision+1 WHERE account_id=? AND revoked_at IS NULL", now, id); e != nil {
 			return e
 		}
@@ -225,6 +233,9 @@ func (s *Store) UpdateAccount(ctx context.Context, id string, in model.AccountUp
 }
 
 func (s *Store) HasEditingLibrary(ctx context.Context) (bool, error) {
+	if _, device := model.DeviceActor(ctx); device {
+		return false, nil
+	}
 	a, ok := model.Actor(ctx)
 	if !ok {
 		return false, model.ErrForbidden

@@ -2,7 +2,7 @@
 name: nyamangaserver
 services:
   server:
-    image: ghcr.io/xklz/nyamangaserver:0.7.0-beta.1
+    image: ghcr.io/xklz/nyamangaserver:0.7.0-beta.2
     platform: linux/amd64
     cpus: 2
     mem_limit: 2g
