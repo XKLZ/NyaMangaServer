@@ -26,6 +26,9 @@ class Device(api_module.Client):
         return super().call(method, path, body, expected, headers, raw, retry_rate_limit)
 
     def login(self, credentials):
+        # Login must not attach the deliberately invalidated credential used
+        # by the preceding restore assertion.
+        self.token = ''
         result = self.call('POST', '/auth/device-sessions', credentials | {
             'device_name': 'Anonymous release device', 'client_instance_id': 'release-fixture'}, 201)
         self.token = result['token']
