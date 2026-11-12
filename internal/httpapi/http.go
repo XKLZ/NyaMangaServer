@@ -50,8 +50,9 @@ type attempt struct {
 }
 type Handler struct {
 	pageRequests                      imageRequests
-	imageWait                         time.Duration // deterministic test override
-	requestTimeout                    time.Duration // test injection; zero retains ordinary 30s
+	imageWait                         time.Duration         // deterministic test override
+	beforeImageResponse               func(context.Context) // deterministic authorization race tests
+	requestTimeout                    time.Duration         // test injection; zero retains ordinary 30s
 	instanceTransfers                 bool
 	health                            *healthHTTP
 	startedAt                         time.Time

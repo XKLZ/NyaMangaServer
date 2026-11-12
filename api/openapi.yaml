@@ -1213,6 +1213,44 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "image_session_limit: at most four online image requests per authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "image_busy or maintenance_active. Retry-After is sent for image_busy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -1265,6 +1303,22 @@
                   "format": "binary"
                 }
               }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
             }
           },
           "default": {
@@ -1273,6 +1327,85 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial image response. ETag identifies the complete image.",
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Image unchanged after live authorization, revision and source checks. The response has no body.",
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "HTTP precondition failed."
+          },
+          "429": {
+            "description": "image_session_limit: at most four online image requests per authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "image_busy: temporary global admission, processing or memory limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
                 }
               }
             }
@@ -1313,6 +1446,15 @@
               "minimum": 1
             },
             "description": "May be omitted only for parsing revision 1; stale/missing revisions after an actual page-order change return 409 parsing_changed."
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Standard HTTP entity tag list. GET uses weak comparison and rechecks current access and source identity."
           }
         ]
       }
@@ -6411,6 +6553,44 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "image_session_limit: at most four online image requests per authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "image_busy or maintenance_active. Retry-After is sent for image_busy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -6471,6 +6651,22 @@
                   "format": "binary"
                 }
               }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
             }
           },
           "default": {
@@ -6479,6 +6675,85 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial image response. ETag identifies the complete image.",
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Image unchanged after live authorization, revision and source checks. The response has no body.",
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "HTTP precondition failed."
+          },
+          "429": {
+            "description": "image_session_limit: at most four online image requests per authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "image_busy: temporary global admission, processing or memory limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
                 }
               }
             }
@@ -6519,6 +6794,15 @@
               "minimum": 1
             },
             "description": "May be omitted only for parsing revision 1; stale/missing revisions after an actual page-order change return 409 parsing_changed."
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Standard HTTP entity tag list. GET uses weak comparison and rechecks current access and source identity."
           }
         ]
       }
@@ -16426,6 +16710,16 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Invalid intent or reading_page_count_unknown when restarting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -16455,7 +16749,8 @@
             },
             "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
-        ]
+        ],
+        "description": "Call after the first real page display. Repeat an unknown result using the same body and idempotency key. Restart is an explicit user action."
       }
     },
     "/books/{id}/reading-state": {
@@ -16605,8 +16900,19 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Invalid intent or reading_page_count_unknown when restarting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
-        }
+        },
+        "description": "Call after the first real page display. Repeat an unknown result using the same body and idempotency key. Restart is an explicit user action."
       }
     },
     "/maintenance/remote-file-info-backfill": {
@@ -17764,16 +18070,64 @@
                   "format": "binary"
                 }
               }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
             }
           },
           "206": {
-            "description": "Partial image response"
+            "description": "Partial image response. ETag identifies the complete image.",
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
+            }
           },
           "304": {
-            "description": "Image entity unchanged after authorization and revision checks"
+            "description": "Image unchanged after live authorization, revision and source checks. The response has no body.",
+            "headers": {
+              "ETag": {
+                "description": "Strong SHA-256 validator of the complete encoded image representation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "private, no-cache"
+                  ]
+                }
+              }
+            }
           },
           "400": {
-            "description": "Invalid request, parameters or mixed credentials",
+            "description": "Invalid parameters, mixed credentials, or invalid_image_purpose.",
             "content": {
               "application/json": {
                 "schema": {
@@ -17841,6 +18195,47 @@
                 }
               }
             }
+          },
+          "412": {
+            "description": "HTTP precondition failed."
+          },
+          "429": {
+            "description": "image_session_limit: at most four online image requests per authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "image_busy: temporary global admission, processing or memory limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before a retry.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
           }
         },
         "parameters": [
@@ -17880,8 +18275,32 @@
               "format": "int64",
               "minimum": 1
             }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Standard HTTP entity tag list. GET uses weak comparison and rechecks current access and source identity."
+          },
+          {
+            "name": "X-Nya-Image-Purpose",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "display",
+                "prefetch"
+              ],
+              "default": "display"
+            },
+            "description": "Only controls scheduling. Repeated or unsupported header values are rejected."
           }
-        ]
+        ],
+        "description": "Use display for the current page and prefetch for speculative adjacent pages. Both purposes use the same bytes and ETag."
       }
     }
   },
@@ -27237,6 +27656,15 @@
           },
           "accept_parsing_change": {
             "type": "boolean"
+          },
+          "intent": {
+            "type": "string",
+            "enum": [
+              "start",
+              "restart"
+            ],
+            "default": "start",
+            "description": "Start preserves completion for current content. Restart explicitly returns to page index zero, clears completion, and creates one reading session. Requires a known local page count and the usual version and revision checks. A reused idempotency key must keep its original intent."
           }
         }
       },
@@ -27911,7 +28339,8 @@
               "personal_state",
               "downloads",
               "offline_sync",
-              "image_variants"
+              "image_variants",
+              "image_prefetch"
             ],
             "properties": {
               "device_sessions": {
@@ -27937,6 +28366,9 @@
               },
               "image_variants": {
                 "$ref": "#/components/schemas/ClientFeature"
+              },
+              "image_prefetch": {
+                "$ref": "#/components/schemas/ClientFeature"
               }
             }
           },
@@ -27949,7 +28381,14 @@
               "max_page_size",
               "active_devices",
               "device_lifetime_seconds",
-              "device_renew_window_seconds"
+              "device_renew_window_seconds",
+              "image_online_per_session",
+              "image_online_global",
+              "image_processing_parallel",
+              "image_prefetch_parallel",
+              "image_wait_seconds",
+              "prefetch_before",
+              "prefetch_after"
             ],
             "properties": {
               "page_index_base": {
@@ -27992,6 +28431,48 @@
                 "type": "integer",
                 "enum": [
                   604800
+                ]
+              },
+              "image_online_per_session": {
+                "type": "integer",
+                "enum": [
+                  4
+                ]
+              },
+              "image_online_global": {
+                "type": "integer",
+                "enum": [
+                  16
+                ]
+              },
+              "image_processing_parallel": {
+                "type": "integer",
+                "enum": [
+                  2
+                ]
+              },
+              "image_prefetch_parallel": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "image_wait_seconds": {
+                "type": "integer",
+                "enum": [
+                  5
+                ]
+              },
+              "prefetch_before": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "prefetch_after": {
+                "type": "integer",
+                "enum": [
+                  2
                 ]
               }
             }

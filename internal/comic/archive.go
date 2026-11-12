@@ -116,6 +116,10 @@ func (p *Pool) acquire(ctx context.Context, root, relative string, size, mtime i
 			return nil, nil, e
 		}
 		p.mu.Lock()
+		if e := ctx.Err(); e != nil {
+			p.mu.Unlock()
+			return nil, nil, e
+		}
 		if p.closed {
 			p.mu.Unlock()
 			return nil, nil, context.Canceled
@@ -546,6 +550,9 @@ func (p *Pool) decodeArchiveImage(ctx context.Context, root, relative string, si
 	}
 	cfg, format, e := image.DecodeConfig(contextReader{ctx, io.LimitReader(reader, int64(f.UncompressedSize64)+1)})
 	reader.Close()
+	if ctx.Err() != nil {
+		return nil, "", "", ctx.Err()
+	}
 	if e != nil {
 		return nil, "", "", ErrImage
 	}
@@ -577,6 +584,9 @@ func (p *Pool) decodeArchiveImage(ctx context.Context, root, relative string, si
 		return nil, "", "", e
 	}
 	decoded, actual, e := image.Decode(contextReader{ctx, bytes.NewReader(raw)})
+	if ctx.Err() != nil {
+		return nil, "", "", ctx.Err()
+	}
 	if e != nil || actual != format {
 		return nil, "", "", ErrImage
 	}

@@ -60,3 +60,5 @@ M3 追加 [002_metadata.sql](002_metadata.sql)，共 23 表。来源／覆盖／
 
 
 [028_client_foundation.sql](028_client_foundation.sql)新增设备会话与逻辑实例身份／缓存世代。保持001–027原字节和账本，现有账号、网页会话、书库和个人资料不回填、不重建。设备凭证从新登录产生。恢复和回退激活清除设备会话并刷新缓存世代。源码升级验证使用匿名27→28数据库，已发布schema27的恢复包继续要求原构建与账本。见[客户端协议](../docs/client-foundation.md)。
+
+[029_reading_session_intent.sql](029_reading_session_intent.sql)为阅读会话增加受约束的 `intent`，旧行默认 `start`，保留会话身份、幂等键和阅读历史。新 `restart` 由服务在同一事务创建会话并重置位置与完成状态。001–028 原字节和账本保持。参见[阅读同步契约](../docs/client-foundation.md#阅读写入继续与重新开始)。

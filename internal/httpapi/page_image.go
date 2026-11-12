@@ -75,6 +75,9 @@ func (h *Handler) servePageImage(w http.ResponseWriter, r *http.Request, edition
 	if out.Release != nil {
 		defer out.Release()
 	}
+	if h.beforeImageResponse != nil {
+		h.beforeImageResponse(r.Context())
+	}
 	if err = h.recheckImageSession(r); err == nil {
 		err = h.catalog.CheckPage(r.Context(), key)
 	}
