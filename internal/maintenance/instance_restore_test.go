@@ -341,6 +341,10 @@ func instanceRestoreFixture(t *testing.T) (*InstanceService, *store.Store, confi
 	if _, e = target.Write.ExecContext(ctx, "INSERT INTO sessions VALUES(?,'original-target',1,9999999999)", auth.HashToken("anonymous-old-target-session")); e != nil {
 		t.Fatal(e)
 	}
+	if _, e = target.Write.ExecContext(ctx, "INSERT INTO device_sessions VALUES('fixture-device','original-target','fixture','Fixture device',?,4,1,9999999999,1,NULL)", auth.HashToken("anonymous-old-target-device")); e != nil {
+		t.Fatal(e)
+	}
+
 	s := NewInstance(target, c, source.build, migrations.Files)
 	s.Inspect = store.ValidateInstanceSchema
 	s.PrepareDatabase = store.PrepareInstanceDatabase
@@ -384,6 +388,11 @@ func activateLocked(t *testing.T, c config.Config, build InstanceBuild, fault fu
 func TestInstanceRestoreLoginCheckpointAndControlledRollback(t *testing.T) {
 	s, target, c, id, oldSession := instanceRestoreFixture(t)
 	ctx := context.Background()
+	targetClient, e := target.ClientIdentity(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+
 	target.Close()
 	if e := activateLocked(t, c, s.build, nil); e != nil {
 		t.Fatal(e)
@@ -435,6 +444,14 @@ func TestInstanceRestoreLoginCheckpointAndControlledRollback(t *testing.T) {
 	if _, e = auth.New(prior, "").Session(ctx, "anonymous-old-target-session"); e == nil {
 		t.Fatal("rollback resurrected an old target session")
 	}
+	priorClient, e := prior.ClientIdentity(ctx)
+	if e != nil || priorClient.InstanceID != targetClient.InstanceID || priorClient.CacheEpoch == targetClient.CacheEpoch {
+		t.Fatal("rollback client identity", priorClient, e)
+	}
+	if v, e := prior.DeviceSession(ctx, auth.HashToken("anonymous-old-target-device"), 100); e != nil || v != nil {
+		t.Fatal("rollback resurrected an old target device", v, e)
+	}
+
 	health, e := prior.HealthState(ctx)
 	if e != nil || health.Phase != "idle" {
 		t.Fatalf("target barrier not released %+v %v", health, e)

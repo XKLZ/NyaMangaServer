@@ -96,6 +96,8 @@ func New(c config.Config, svc *auth.Service, assets fs.FS, logger *slog.Logger, 
 	}
 	h.accountRoutes(protected)
 	h.registerDeviceRoutes()
+	h.mux.HandleFunc(clientServerInfoPath, h.method("GET", h.clientServerInfo))
+	protected.HandleFunc(clientCapabilitiesPath, h.method("GET", h.clientCapabilities))
 	protected.HandleFunc("/api/v1/auth/session", h.method("GET", h.session))
 	protected.HandleFunc("/api/v1/auth/logout", h.method("POST", h.logout))
 	protected.HandleFunc("/api/v1/auth/password", h.method("PUT", h.password))

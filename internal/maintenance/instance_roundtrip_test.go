@@ -37,7 +37,7 @@ func instanceLogicalRows(t *testing.T, db *sql.DB) map[string]string {
 	rows.Close()
 	out := map[string]string{}
 	for _, name := range names {
-		if strings.HasPrefix(name, "instance_") || name == "sessions" || name == "events" || name == "health_state" {
+		if strings.HasPrefix(name, "instance_") || name == "sessions" || name == "device_sessions" || name == "events" || name == "health_state" {
 			continue
 		}
 		query := fmt.Sprintf("SELECT * FROM %q", name)
@@ -92,6 +92,15 @@ func TestInstanceFullNonemptyBusinessRoundtripLogicalIdentity(t *testing.T) {
 	if e = testfixture.SeedInstanceRecovery(ctx, db.Write, c.DataDir, source, "fixture"); e != nil {
 		t.Fatal(e)
 	}
+	sourceClient, e := db.ClientIdentity(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	deviceToken, _, e := auth.New(db, "").LoginDevice(ctx, "fixture-viewer", "anonymous recovery password", "Fixture device", "fixture")
+	if e != nil {
+		t.Fatal(e)
+	}
+
 	vault := provider.NewVault(c.ProviderKeyFile, c.ProviderCredentialsFile)
 	cookie := "anonymous-cookie"
 	if _, e = vault.Credentials(provider.CredentialPatch{Expected: 1, Fields: map[string]provider.SecretChange{"ipb_pass_hash": {Op: "set", Value: &cookie}}}); e != nil {
@@ -141,6 +150,14 @@ func TestInstanceFullNonemptyBusinessRoundtripLogicalIdentity(t *testing.T) {
 		t.Fatal("restore retained sessions", oldSessions, e)
 	}
 	login := auth.New(restored, "")
+	restoredClient, e := restored.ClientIdentity(ctx)
+	if e != nil || restoredClient.InstanceID != sourceClient.InstanceID || restoredClient.CacheEpoch == sourceClient.CacheEpoch {
+		t.Fatal("restored client identity", restoredClient, e)
+	}
+	if _, e = login.DeviceSession(ctx, deviceToken); !errors.Is(e, model.ErrDeviceSession) {
+		t.Fatal("source device credential retained", e)
+	}
+
 	_, viewerSession, e := login.LoginUsername(ctx, "fixture-viewer", "anonymous recovery password")
 	if e != nil || viewerSession.Account == nil || viewerSession.Account.MustChangePassword {
 		t.Fatal("restored ordinary login", viewerSession, e)

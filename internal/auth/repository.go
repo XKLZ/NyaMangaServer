@@ -7,6 +7,8 @@ import (
 
 // Repository describes the persistence operations required by this service.
 type Repository interface {
+	ClientIdentity(context.Context) (model.ClientIdentity, error)
+	ClientConfiguration(context.Context) (model.ClientConfiguration, error)
 	CreateDeviceSession(context.Context, model.Account, model.DeviceSession, []byte) error
 	DeviceSession(context.Context, []byte, int64) (*model.DeviceSession, error)
 	DeviceSessions(context.Context) ([]model.DeviceSession, error)
