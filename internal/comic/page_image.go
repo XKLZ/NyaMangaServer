@@ -14,7 +14,7 @@ import (
 const PageValidationLimit = 1024
 const PageValidationIdle = 5 * time.Minute
 const PageHotBytes = 64 << 20
-const pageRepresentation = "archive-page-v1"
+const PageRepresentationVersion = "archive-page-v1"
 
 type SourceIdentity struct {
 	device, inode uint64
@@ -164,7 +164,7 @@ func (b *Budget) leasePageLocked(output *pageBytes, key PageKey, tag string) Pag
 // Page loads and validates one archive member. Only source-verified keys are
 // accepted from the library. The caller rechecks access before writing headers.
 func (p *Pool) Page(ctx context.Context, key PageKey, display bool, matches func(string) bool) (PageImage, error) {
-	key.representation = pageRepresentation
+	key.representation = PageRepresentationVersion
 	b := p.budget
 	b.mu.Lock()
 	if err := ctx.Err(); err != nil {

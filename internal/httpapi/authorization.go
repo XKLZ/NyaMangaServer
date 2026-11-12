@@ -9,6 +9,10 @@ import (
 // Complete method/pattern inventory. Every unlisted protected route defaults to
 // administrator-only; registering a new handler cannot silently grant access.
 var routeAuthorization = map[string]map[string]string{
+	manifestCreatePath:                              {"POST": "personal"},
+	manifestGetPath:                                 {"GET": "read"},
+	manifestPagesPath:                               {"GET": "read"},
+	offlineCheckPath:                                {"POST": "read"},
 	downloadPreparePath:                             {"POST": "personal"},
 	downloadStatusPath:                              {"GET": "read", "DELETE": "personal"},
 	downloadContentPath:                             {"GET": "read", "HEAD": "read"},

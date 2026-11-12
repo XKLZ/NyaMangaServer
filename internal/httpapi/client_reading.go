@@ -159,5 +159,14 @@ func (h *Handler) clientPageImage(w http.ResponseWriter, r *http.Request) {
 		h.catalogFailure(w, r, model.ErrNotFound)
 		return
 	}
-	h.servePageImage(w, r, *b, int(index)+1, display)
+	values := r.URL.Query()["offline_manifest_id"]
+	var manifest string
+	if len(values) != 0 {
+		if len(values) != 1 || values[0] == "" || len(values[0]) > 128 || display {
+			h.error(w, r, 400, "invalid_offline_image_request", "离线取页必须绑定一个清单并使用 prefetch")
+			return
+		}
+		manifest = values[0]
+	}
+	h.servePageImage(w, r, *b, int(index)+1, display, manifest)
 }

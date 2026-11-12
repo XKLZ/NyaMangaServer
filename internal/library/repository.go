@@ -7,6 +7,8 @@ import (
 
 // Repository describes the persistence operations required by this service.
 type Repository interface {
+	CreateOfflineManifest(context.Context, model.OfflineManifest) (model.OfflineManifest, error)
+	OfflineManifest(context.Context, string) (model.OfflineManifest, error)
 	HealthWriteAllowed(context.Context) error
 	AccountByID(context.Context, string) (*model.Account, error)
 	PrepareDownload(context.Context, model.Download) (model.Download, error)

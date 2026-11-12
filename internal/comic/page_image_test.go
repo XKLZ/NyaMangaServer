@@ -78,7 +78,7 @@ func TestPageVerificationSurvivesByteEvictionAndChargesResponse(t *testing.T) {
 
 func waitPageWaiters(t *testing.T, b *Budget, key PageKey, count int) *pageFlight {
 	t.Helper()
-	key.representation = pageRepresentation
+	key.representation = PageRepresentationVersion
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
 		b.mu.Lock()
@@ -268,8 +268,8 @@ func TestPageVerificationBoundsRecordsAndServesAboveHotLimit(t *testing.T) {
 		}
 		out.Release()
 	}
-	first.representation = pageRepresentation
-	key.representation = pageRepresentation
+	first.representation = PageRepresentationVersion
+	key.representation = PageRepresentationVersion
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if len(b.pages) != PageValidationLimit || b.pages[first] != nil || b.pages[key] == nil || b.hotBytes > b.limit/8 {

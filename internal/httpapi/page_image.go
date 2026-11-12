@@ -54,22 +54,28 @@ func serveImageBytes(w http.ResponseWriter, r *http.Request, data []byte, kind, 
 	http.ServeContent(w, r, "image", time.Time{}, bytes.NewReader(data))
 }
 
-func (h *Handler) servePageImage(w http.ResponseWriter, r *http.Request, edition model.Edition, index int, display bool) {
+func (h *Handler) servePageImage(w http.ResponseWriter, r *http.Request, edition model.Edition, index int, display bool, manifest string) {
 	deadline, _ := r.Context().Value(httpImageDeadlineKey{}).(time.Time)
 	wait, cancel := context.WithDeadline(r.Context(), deadline)
-	key, err := h.catalog.PreparePage(wait, edition, index)
+	var key comic.PageKey
+	var err error
+	if manifest == "" {
+		key, err = h.catalog.PreparePage(wait, edition, index)
+	} else {
+		key, err = h.catalog.PrepareOfflinePage(wait, manifest, edition, index)
+	}
 	if errors.Is(wait.Err(), context.DeadlineExceeded) && r.Context().Err() == nil {
 		err = comic.ErrImageBusy
 	}
 	cancel()
 	if err != nil {
-		h.catalogFailure(w, r, err)
+		h.downloadFailure(w, r, err)
 		return
 	}
 	r = imageConditions(r)
 	out, err := h.catalog.Pool.Page(r.Context(), key, display, func(tag string) bool { return imageNotModified(r, tag) })
 	if err != nil {
-		h.catalogFailure(w, r, err)
+		h.downloadFailure(w, r, err)
 		return
 	}
 	if out.Release != nil {
@@ -82,7 +88,7 @@ func (h *Handler) servePageImage(w http.ResponseWriter, r *http.Request, edition
 		err = h.catalog.CheckPage(r.Context(), key)
 	}
 	if err != nil {
-		h.catalogFailure(w, r, err)
+		h.downloadFailure(w, r, err)
 		return
 	}
 	serveImageBytes(w, r, out.Bytes, out.Kind, out.ETag)

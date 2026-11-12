@@ -140,7 +140,7 @@ func (h *Handler) healthAdmission(w http.ResponseWriter, r *http.Request) (func(
 	}
 	if r.Method == "POST" {
 		switch path {
-		case "/api/v1/books/search", "/api/v1/editions/search", "/api/v1/admin/books/search", "/api/v1/admin/editions/search", "/api/v1/tag-suggestions", clientWorkSearchPath:
+		case "/api/v1/books/search", "/api/v1/editions/search", "/api/v1/admin/books/search", "/api/v1/admin/editions/search", "/api/v1/tag-suggestions", clientWorkSearchPath, offlineCheckPath:
 			return func() {}, true
 		}
 	}

@@ -15,6 +15,7 @@ import (
 
 func (h *Handler) catalogRoutes(m *http.ServeMux) {
 	h.downloadRoutes(m)
+	h.manifestRoutes(m)
 	m.HandleFunc(clientContextPath, h.method("GET", h.clientReadingContext))
 	m.HandleFunc(clientPagesPath, h.method("GET", h.clientPages))
 	m.HandleFunc(clientImagePath, h.method("GET", h.clientPageImage))
@@ -443,7 +444,7 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 			h.catalogFailure(w, r, comic.ErrChanged)
 			return
 		}
-		h.servePageImage(w, r, *before, index, true)
+		h.servePageImage(w, r, *before, index, true, "")
 		return
 	}
 	data, kind, e := h.catalog.Image(r.Context(), r.PathValue("id"), revision, index, true)
