@@ -82,7 +82,17 @@ func (s *Store) DeviceSessions(ctx context.Context) ([]model.DeviceSession, erro
 	if !ok {
 		return nil, model.ErrForbidden
 	}
-	rows, e := s.Read.QueryContext(ctx, "SELECT "+deviceColumns+` FROM device_sessions d JOIN account_profiles p ON p.account_id=d.account_id
+	tx, e := s.Read.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if e != nil {
+		return nil, e
+	}
+	defer tx.Rollback()
+	if d, device := model.DeviceActor(ctx); device {
+		if e = checkDeviceActor(ctx, tx, a.ID, d); e != nil {
+			return nil, e
+		}
+	}
+	rows, e := tx.QueryContext(ctx, "SELECT "+deviceColumns+` FROM device_sessions d JOIN account_profiles p ON p.account_id=d.account_id
 		WHERE d.account_id=? AND p.enabled=1 AND p.must_change_password=0 ORDER BY d.created_at DESC,d.id`, a.ID)
 	if e != nil {
 		return nil, e
@@ -96,7 +106,10 @@ func (s *Store) DeviceSessions(ctx context.Context) ([]model.DeviceSession, erro
 		}
 		out = append(out, v)
 	}
-	return out, rows.Err()
+	if e = rows.Err(); e != nil {
+		return nil, e
+	}
+	return out, tx.Commit()
 }
 
 func (s *Store) RenewDeviceSession(ctx context.Context, now int64) (model.DeviceSession, error) {
@@ -113,7 +126,7 @@ func (s *Store) RenewDeviceSession(ctx context.Context, now int64) (model.Device
 	now = d.Now().Unix()
 	a, _ := model.Actor(ctx)
 	v, e = scanDevice(tx.QueryRowContext(ctx, "SELECT "+deviceColumns+` FROM device_sessions d JOIN accounts a ON a.id=d.account_id
-		JOIN account_profiles p ON p.account_id=a.id WHERE d.id=? AND d.account_id=? AND `+liveDeviceSQL, d.ID, a.ID, now))
+		JOIN account_profiles p ON p.account_id=a.id WHERE d.id=? AND d.account_id=? AND p.must_change_password=0 AND `+liveDeviceSQL, d.ID, a.ID, now))
 	if errors.Is(e, sql.ErrNoRows) {
 		return v, model.ErrDeviceSession
 	}
@@ -148,7 +161,8 @@ func (s *Store) TouchDeviceSession(ctx context.Context, now int64) error {
 	// The predicate skips the write while a maintenance barrier is active.
 	_, e := s.Write.ExecContext(ctx, `UPDATE device_sessions SET last_active_at=?
 		WHERE id=? AND account_id=? AND last_active_at<=? AND
-		(SELECT phase FROM health_state WHERE singleton=1)='idle'`, now, d.ID, a.ID, now-model.DeviceActivitySeconds)
+		(SELECT phase FROM health_state WHERE singleton=1)='idle' AND
+		(SELECT owner FROM instance_state WHERE singleton=1) IS NULL`, now, d.ID, a.ID, now-model.DeviceActivitySeconds)
 	return e
 }
 

@@ -2,7 +2,7 @@
 
 本清单来自当前受保护路由策略，记录源码覆盖，不表示每行均单独执行过HTTP测试。未列入策略的新受保护路由默认仅管理员；数据库读范围在COUNT／分页前统一生效，写范围在同一事务内由TEMP触发器再次核验当前账号与授权。
 
-管理员拥有全部权限。read为当前授权库内浏览，personal仅本人个人状态，editor为授权库编辑，admin为全局管理员，self为本人认证。POST只读搜索按read处理。全局标签图片／译名／人工关系写始终admin。
+管理网页的管理员 Cookie 可使用管理员接口。设备凭证在所有角色下受本文末尾的独立白名单限制。read为当前授权库内浏览，personal仅本人个人状态，editor为授权库编辑，admin为全局管理员，self为本人认证。POST只读搜索按read处理。全局标签图片／译名／人工关系写始终admin。
 
 | 路径 | 方法 | 策略 |
 |---|---|---|
@@ -11,6 +11,10 @@
 | `/api/v1/accounts/{id}` | PUT | admin |
 | `/api/v1/admin/books/search` | POST | read |
 | `/api/v1/admin/editions/search` | POST | read |
+| `/api/v1/auth/device-sessions` | GET | self |
+| `/api/v1/auth/device-sessions` | POST | public login |
+| `/api/v1/auth/device-sessions/current/renew` | POST | self，设备凭证 |
+| `/api/v1/auth/device-sessions/{id}` | DELETE | self |
 | `/api/v1/auth/login` | POST | self |
 | `/api/v1/auth/logout` | POST | self |
 | `/api/v1/auth/password` | PUT | self |
@@ -37,6 +41,12 @@
 | `/api/v1/books/{id}/source-previews/{preview}` | GET | read |
 | `/api/v1/books/{id}/source-previews/{preview}/confirm` | POST | editor |
 | `/api/v1/books/{id}/user-state` | PATCH | personal |
+| `/api/v1/client/server-info` | GET | public |
+| `/api/v1/client/capabilities` | GET | self |
+| `/api/v1/client/works/search` | POST | read |
+| `/api/v1/client/works/{id}/reading-context` | GET | read |
+| `/api/v1/client/editions/{id}/pages` | GET | read |
+| `/api/v1/client/editions/{id}/pages/{page_index}/image` | GET | read |
 | `/api/v1/diagnostics` | GET | admin |
 | `/api/v1/editions` | GET | read |
 | `/api/v1/editions/search` | POST | read |
@@ -259,6 +269,30 @@
 
 动态注册路径另有严格动作白名单：work／series-proposals的accept、dismiss、restore、undo；批次方案另支持resolve。批次control允许continue、pause、resume、cancel、retry、recheck、skip_recommendation；来源查询control允许pause、resume、cancel、retry。未知动作拒绝；具体领域状态与CAS校验继续执行。
 
-只读高亮Bearer路由独立认证，不使用普通session替代；每次查询核验账号启用、强制改密状态及当前库授权，最终发布比较ACL世代防止撤权后冻结旧结果。管理入口仅admin。SSE每批重新读取session与当前ACL，事件先按库／owner过滤再LIMIT；无法归属的已删除对象事件不回退为全局事件。
+只读高亮Bearer路由独立认证，不使用普通session替代；每次查询核验账号启用、强制改密状态及当前库授权，最终发布比较ACL世代防止撤权后冻结旧结果。管理入口仅admin。网页SSE每批重新读取Cookie会话与当前ACL，事件先按库／owner过滤再LIMIT；无法归属的已删除对象事件不回退为全局事件。
 
 实际匿名证据包括viewer现有网页POST搜索／直接详情／单页与封面越库／本人状态／默认拒绝新路由；editor完整匿名导入与固定推荐工作器；有确定非空方案的Work和Series采纳／撤销，Series忽略／恢复，以及组织操作；仓储覆盖三账号三库、计数／嵌套CTE、禁止main绕过和同名影子、共享来源原子拒绝、新来源和标签、撤权陈旧工作器、连接替换、旧新归属、标签／图片／事件和高亮。具体命令与结果见[专项说明](data-compatibility.md)。
+
+
+## 设备 Bearer 白名单
+
+方法和匹配路由必须同时满足下表。账号角色和逐库 ACL 仍用于各次请求。设备数据库写入重检会话并限制个人状态和凭证操作。
+
+| 路由（相对于 `/api/v1`） | 方法 |
+|---|---|
+| `/auth/session`、`/auth/device-sessions`、`/client/capabilities` | GET |
+| `/auth/logout`、`/auth/device-sessions/current/renew` | POST |
+| `/auth/password` | PUT |
+| `/auth/device-sessions/{id}` | DELETE |
+| `/libraries`、`/editions/{id}/cover` | GET |
+| `/client/works/search` | POST |
+| `/client/works/{id}/reading-context`、`/client/editions/{id}/pages`、`/client/editions/{id}/pages/{page_index}/image` | GET |
+| `/editions/{id}/reading-state` | GET、PUT |
+| `/editions/{id}/reading-sessions` | POST |
+| `/editions/{id}/user-state` | PATCH |
+| `/saved-searches` | GET、POST |
+| `/saved-searches/{id}` | GET、PATCH、DELETE |
+| `/tags`、`/tag-catalog`、`/tag-catalog/{id}/images/{role}/content` | GET |
+| `/tags/{id}/follow` | PUT、DELETE |
+
+设备不接收 SSE。维护、任务、凭据、增强配置、元数据编辑、组织整理入口仅按网页授权矩阵开放。详见[客户端协议](client-foundation.md)。

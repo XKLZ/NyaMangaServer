@@ -30,7 +30,6 @@ var deviceRoutes = map[string]map[string]bool{
 	"/api/v1/editions/{id}/reading-state":            {"GET": true, "PUT": true},
 	"/api/v1/editions/{id}/reading-sessions":         {"POST": true},
 	"/api/v1/editions/{id}/user-state":               {"PATCH": true},
-	"/api/v1/works/{id}/favorite":                    {"PUT": true},
 	"/api/v1/saved-searches":                         {"GET": true, "POST": true},
 	"/api/v1/saved-searches/{id}":                    {"GET": true, "PATCH": true, "DELETE": true},
 	"/api/v1/tags":                                   {"GET": true},
@@ -77,7 +76,7 @@ func (h *Handler) deviceLogin(w http.ResponseWriter, r *http.Request) {
 		DeviceName       *string `json:"device_name"`
 		ClientInstanceID *string `json:"client_instance_id"`
 	}
-	if !h.decode(w, r, &in) {
+	if !h.decodeJSON(w, r, &in, true) {
 		return
 	}
 	if in.Username == nil || in.Password == nil || in.DeviceName == nil || in.ClientInstanceID == nil {

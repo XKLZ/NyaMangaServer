@@ -9,13 +9,13 @@ import (
 )
 
 const clientEditionTitle = `COALESCE(NULLIF(json_extract(eb.fields_json,'$.title_original'),''),NULLIF(w.name_override,''),NULLIF(eb.title,''),f.filename_title)`
-const clientEditionColumns = `ed.id,` + clientEditionTitle + `,COALESCE(cs.revision,0),f.content_revision,f.parsing_revision,NULLIF(f.page_count,0),f.file_state,COALESCE(u.hidden,0)`
+const clientEditionColumns = `ed.id,` + clientEditionTitle + `,COALESCE(cs.revision,0),f.content_revision,f.parsing_revision,NULLIF(f.page_count,0),f.file_state,COALESCE(u.hidden,0),COALESCE(u.favorite,0),COALESCE(u.revision,0)`
 const clientEditionJoins = `JOIN files f ON f.edition_id=ed.id JOIN works w ON w.id=ed.work_id
 	LEFT JOIN effective_editions eb ON eb.edition_id=ed.id LEFT JOIN cover_selections cs ON cs.edition_id=ed.id
 	LEFT JOIN edition_user_states u ON u.edition_id=ed.id AND u.account_id=?`
 
 func clientEditionTargets(v *model.ClientEdition) []any {
-	return []any{&v.ID, &v.Title, &v.CoverRevision, &v.ContentRevision, &v.ParsingRevision, &v.PageCount, &v.FileState, &v.Hidden}
+	return []any{&v.ID, &v.Title, &v.CoverRevision, &v.ContentRevision, &v.ParsingRevision, &v.PageCount, &v.FileState, &v.UserState.Hidden, &v.UserState.Favorite, &v.UserState.Revision}
 }
 
 func (s *Store) ClientReadingContext(ctx context.Context, id, requested, intent string) (model.ClientReadingContext, error) {
@@ -64,7 +64,7 @@ func (s *Store) ClientReadingContext(ctx context.Context, id, requested, intent 
 		if v.ID == preferred {
 			out.PreferredEditionID = &v.ID
 		}
-		if !v.Hidden && !completed && at != nil && (lastRead == nil || *at > *lastRead || *at == *lastRead && v.ID < resumeID) {
+		if !v.UserState.Hidden && !completed && at != nil && (lastRead == nil || *at > *lastRead || *at == *lastRead && v.ID < resumeID) {
 			resumeID, lastRead = v.ID, at
 		}
 	}

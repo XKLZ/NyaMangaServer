@@ -46,6 +46,10 @@
     {
       "name": "TagManagement",
       "description": "Explicit-library tag catalog and globally shared human parody/character decisions"
+    },
+    {
+      "name": "Client",
+      "description": "Device sessions and native client protocol 1"
     }
   ],
   "security": [
@@ -205,7 +209,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Session"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Session"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DeviceSessionInfo"
+                    }
+                  ]
                 }
               }
             }
@@ -220,7 +231,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/auth/password": {
@@ -266,8 +285,8 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
-            "description": "Must equal configured public_url.",
+            "required": false,
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin.",
             "schema": {
               "type": "string"
             }
@@ -275,10 +294,19 @@
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
           }
         ]
       }
@@ -309,8 +337,8 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
-            "description": "Must equal configured public_url.",
+            "required": false,
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin.",
             "schema": {
               "type": "string"
             }
@@ -318,10 +346,19 @@
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
           }
         ]
       }
@@ -475,7 +512,25 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LibraryList"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/LibraryList"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "items"
+                      ],
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/DeviceLibrary"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -490,7 +545,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       },
       "post": {
         "operationId": "createLibrary",
@@ -1667,7 +1730,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/tags/{id}/translations/{locale}": {
@@ -3657,7 +3728,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       },
       "post": {
         "operationId": "createSavedSearch",
@@ -3669,18 +3748,20 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
           },
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
         ],
         "responses": {
@@ -3714,7 +3795,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/saved-searches/{id}": {
@@ -3755,7 +3844,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       },
       "patch": {
         "operationId": "updateSavedSearch",
@@ -3775,18 +3872,20 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
           },
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
         ],
         "responses": {
@@ -3820,7 +3919,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       },
       "delete": {
         "operationId": "deleteSavedSearch",
@@ -3840,18 +3947,20 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
           },
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
         ],
         "responses": {
@@ -3878,7 +3987,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/admin/books/search": {
@@ -6314,6 +6431,14 @@
               "minimum": 1
             }
           }
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
         ]
       }
     },
@@ -6543,18 +6668,20 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
           },
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
         ],
         "responses": {
@@ -6588,7 +6715,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/admin/editions/search": {
@@ -12137,7 +12272,15 @@
           "default": {
             "$ref": "#/components/responses/TagManagementInternalError"
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/tag-catalog/{id}": {
@@ -13254,7 +13397,15 @@
             "description": "If-None-Match matched the actual PNG ETag after verifying the requested revision."
           }
         },
-        "description": "Requires the exact current role revision, otherwise 409 (never substitute a new image for an old URL). Current absent image returns404. Fixed processing v1: foreground contain 768x768 preserving alpha; background center crop 1024x512. Content-Type image/png, nosniff and private,no-cache. Cache key includes source digest, role, dimensions and processing version."
+        "description": "Requires the exact current role revision, otherwise 409 (never substitute a new image for an old URL). Current absent image returns404. Fixed processing v1: foreground contain 768x768 preserving alpha; background center crop 1024x512. Content-Type image/png, nosniff and private,no-cache. Cache key includes source digest, role, dimensions and processing version.",
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/settings/enhancements": {
@@ -13488,18 +13639,20 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
           },
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
         ],
         "requestBody": {
@@ -13617,7 +13770,15 @@
             }
           }
         },
-        "description": "Identity comes exclusively from the authenticated session. Global across libraries and all tag categories. Changing state retains a monotonic tombstone and advances only this account follow epoch; preserves metadata, relations, images, usage and recommendation inputs. Transactionally emits private tag_follow SSE event (resource_id=tag ID, revision=follow revision), server-filtered to this account. No confirmation or automatic recommendation. No account_id parameter is accepted."
+        "description": "Identity comes exclusively from the authenticated session. Global across libraries and all tag categories. Changing state retains a monotonic tombstone and advances only this account follow epoch; preserves metadata, relations, images, usage and recommendation inputs. Transactionally emits private tag_follow SSE event (resource_id=tag ID, revision=follow revision), server-filtered to this account. No confirmation or automatic recommendation. No account_id parameter is accepted.",
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       },
       "delete": {
         "operationId": "unfollowTag",
@@ -13637,18 +13798,20 @@
           {
             "name": "Origin",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
           },
           {
             "name": "X-CSRF-Token",
             "in": "header",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
           }
         ],
         "requestBody": {
@@ -13766,7 +13929,15 @@
             }
           }
         },
-        "description": "Identity comes exclusively from the authenticated session. Global across libraries and all tag categories. Changing state retains a monotonic tombstone and advances only this account follow epoch; preserves metadata, relations, images, usage and recommendation inputs. Transactionally emits private tag_follow SSE event (resource_id=tag ID, revision=follow revision), server-filtered to this account. No confirmation or automatic recommendation. No account_id parameter is accepted."
+        "description": "Identity comes exclusively from the authenticated session. Global across libraries and all tag categories. Changing state retains a monotonic tombstone and advances only this account follow epoch; preserves metadata, relations, images, usage and recommendation inputs. Transactionally emits private tag_follow SSE event (resource_id=tag ID, revision=follow revision), server-filtered to this account. No confirmation or automatic recommendation. No account_id parameter is accepted.",
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       }
     },
     "/settings/gallery-highlight/connections": {
@@ -16110,7 +16281,15 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ]
       },
       "put": {
         "operationId": "editionsWriteReadingState",
@@ -16159,7 +16338,35 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ]
       }
     },
     "/editions/{id}/reading-sessions": {
@@ -16220,7 +16427,35 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ]
       }
     },
     "/books/{id}/reading-state": {
@@ -16594,6 +16829,1060 @@
         },
         "summary": "Set the filename encoding for one edition"
       }
+    },
+    "/auth/device-sessions": {
+      "post": {
+        "operationId": "deviceLogin",
+        "summary": "Create a 30-day device session and return the credential once",
+        "tags": [
+          "Client"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Device session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceLoginResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "device_limit_reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input or search syntax",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "maintenance_active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "If present, must equal the configured public origin."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceLogin"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "deviceSessions",
+        "summary": "List the caller's device sessions",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DeviceSession"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/device-sessions/current/renew": {
+      "post": {
+        "operationId": "renewDeviceSession",
+        "summary": "Extend to 30 days from now only when less than 7 days remain",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current device session, including early no-op renewal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "device"
+                  ],
+                  "properties": {
+                    "device": {
+                      "$ref": "#/components/schemas/DeviceSession"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "maintenance_active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "If present, must equal the configured public origin."
+          }
+        ]
+      }
+    },
+    "/auth/device-sessions/{id}": {
+      "delete": {
+        "operationId": "revokeDeviceSession",
+        "summary": "Revoke a device owned by the caller, idempotently",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked, already revoked or absent in caller's account"
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "maintenance_active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ]
+      }
+    },
+    "/client/server-info": {
+      "get": {
+        "operationId": "clientServerInfo",
+        "summary": "Discover the service and stable logical instance identity",
+        "tags": [
+          "Client"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Server information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientServerInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/capabilities": {
+      "get": {
+        "operationId": "clientCapabilities",
+        "summary": "Get account scope, protocol limits and feature availability",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Client capabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCapabilities"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/works/search": {
+      "post": {
+        "operationId": "clientWorkSearch",
+        "summary": "Match visible Editions in one library and fold by Work",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot page of Works",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientWorkSearchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource outside authorization scope, absent, or page index out of range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "search_snapshot_expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input or search syntax",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes; if sent with a device request, must equal the configured public origin."
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required for Cookie writes. Omit with DeviceBearer."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientWorkSearch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/works/{id}/reading-context": {
+      "get": {
+        "operationId": "clientReadingContext",
+        "summary": "Select an Edition and return read-only context and personal state",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reading context",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientReadingContext"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource outside authorization scope, absent, or page index out of range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input or search syntax",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "edition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "intent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "continue"
+              ],
+              "default": "open"
+            }
+          }
+        ]
+      }
+    },
+    "/client/editions/{id}/pages": {
+      "get": {
+        "operationId": "clientEditionPages",
+        "summary": "List zero-based page indexes with both revisions required",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page directory",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPageList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource outside authorization scope, absent, or page index out of range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source content or parsing changed, or source unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "content_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "parsing_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "maximum": 1000000
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 24
+            }
+          }
+        ]
+      }
+    },
+    "/client/editions/{id}/pages/{page_index}/image": {
+      "get": {
+        "operationId": "clientEditionPageImage",
+        "summary": "Read a zero-based page image with both revisions required",
+        "tags": [
+          "Client"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "DeviceBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial image response"
+          },
+          "304": {
+            "description": "Image entity unchanged after authorization and revision checks"
+          },
+          "400": {
+            "description": "Invalid request, parameters or mixed credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, origin rejected, CSRF rejected or password change required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource outside authorization scope, absent, or page index out of range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source content or parsing changed, or source unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Page corrupt or resource limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page_index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "content_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "parsing_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -16607,6 +17896,12 @@
         "type": "http",
         "scheme": "bearer",
         "description": "Scoped ngh1_ read-only token, exclusively status/lookup. Session cookies cannot substitute; this token cannot authenticate management APIs."
+      },
+      "DeviceBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque device session",
+        "description": "Authorization: Bearer nya_device_v1_… . Cookie and Bearer are mutually exclusive."
       }
     },
     "schemas": {
@@ -26321,6 +27616,811 @@
           "state",
           "revision"
         ]
+      },
+      "DeviceLogin": {
+        "type": "object",
+        "required": [
+          "username",
+          "password",
+          "device_name",
+          "client_instance_id"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true
+          },
+          "device_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "client_instance_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeviceSession": {
+        "type": "object",
+        "required": [
+          "id",
+          "client_instance_id",
+          "device_name",
+          "created_at",
+          "expires_at",
+          "last_active_at",
+          "revoked_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "client_instance_id": {
+            "type": "string"
+          },
+          "device_name": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix seconds in UTC"
+          },
+          "expires_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix seconds in UTC"
+          },
+          "last_active_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix seconds in UTC"
+          },
+          "revoked_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "DeviceSessionInfo": {
+        "type": "object",
+        "required": [
+          "device",
+          "actor"
+        ],
+        "properties": {
+          "device": {
+            "$ref": "#/components/schemas/DeviceSession"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/Actor"
+          }
+        }
+      },
+      "DeviceLoginResult": {
+        "type": "object",
+        "required": [
+          "device",
+          "actor",
+          "token"
+        ],
+        "properties": {
+          "device": {
+            "$ref": "#/components/schemas/DeviceSession"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/Actor"
+          },
+          "token": {
+            "type": "string",
+            "pattern": "^nya_device_v1_[A-Za-z0-9_-]{43}$",
+            "description": "Returned only on successful login. Store in the platform credential store."
+          }
+        }
+      },
+      "DeviceLibrary": {
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "disabled",
+          "availability"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unavailable",
+              "changed"
+            ]
+          }
+        }
+      },
+      "ClientServerInfo": {
+        "type": "object",
+        "required": [
+          "service",
+          "version",
+          "protocol_version",
+          "instance_id",
+          "initialized"
+        ],
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "NyaMangaServer"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "protocol_version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "instance_id": {
+            "type": "string"
+          },
+          "initialized": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ClientFeature": {
+        "type": "object",
+        "required": [
+          "supported",
+          "enabled",
+          "allowed",
+          "available",
+          "reason"
+        ],
+        "properties": {
+          "supported": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "available",
+              "unsupported",
+              "instance_disabled",
+              "account_not_allowed",
+              "maintenance_active",
+              "library_disabled",
+              "root_unavailable"
+            ]
+          }
+        }
+      },
+      "ClientCapabilities": {
+        "type": "object",
+        "required": [
+          "protocol_version",
+          "instance",
+          "account_id",
+          "acl_revision",
+          "libraries",
+          "maintenance_active",
+          "background_hold",
+          "features",
+          "limits"
+        ],
+        "properties": {
+          "protocol_version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "instance": {
+            "type": "object",
+            "required": [
+              "instance_id",
+              "cache_epoch"
+            ],
+            "properties": {
+              "instance_id": {
+                "type": "string"
+              },
+              "cache_epoch": {
+                "type": "string"
+              }
+            }
+          },
+          "account_id": {
+            "type": "string"
+          },
+          "acl_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "libraries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "role",
+                "disabled"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "admin",
+                    "editor",
+                    "viewer"
+                  ]
+                },
+                "disabled": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "maintenance_active": {
+            "type": "boolean"
+          },
+          "background_hold": {
+            "type": "boolean"
+          },
+          "features": {
+            "type": "object",
+            "required": [
+              "device_sessions",
+              "work_search",
+              "reading_context",
+              "page_images",
+              "personal_state",
+              "downloads",
+              "offline_sync",
+              "image_variants"
+            ],
+            "properties": {
+              "device_sessions": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "work_search": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "reading_context": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "page_images": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "personal_state": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "downloads": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "offline_sync": {
+                "$ref": "#/components/schemas/ClientFeature"
+              },
+              "image_variants": {
+                "$ref": "#/components/schemas/ClientFeature"
+              }
+            }
+          },
+          "limits": {
+            "type": "object",
+            "required": [
+              "page_index_base",
+              "list_page_base",
+              "default_page_size",
+              "max_page_size",
+              "active_devices",
+              "device_lifetime_seconds",
+              "device_renew_window_seconds"
+            ],
+            "properties": {
+              "page_index_base": {
+                "type": "integer",
+                "enum": [
+                  0
+                ]
+              },
+              "list_page_base": {
+                "type": "integer",
+                "enum": [
+                  1
+                ]
+              },
+              "default_page_size": {
+                "type": "integer",
+                "enum": [
+                  24
+                ]
+              },
+              "max_page_size": {
+                "type": "integer",
+                "enum": [
+                  100
+                ]
+              },
+              "active_devices": {
+                "type": "integer",
+                "enum": [
+                  20
+                ]
+              },
+              "device_lifetime_seconds": {
+                "type": "integer",
+                "enum": [
+                  2592000
+                ]
+              },
+              "device_renew_window_seconds": {
+                "type": "integer",
+                "enum": [
+                  604800
+                ]
+              }
+            }
+          }
+        }
+      },
+      "ClientEdition": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "cover_revision",
+          "cover_url",
+          "content_revision",
+          "parsing_revision",
+          "page_count",
+          "readability",
+          "user_state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "cover_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cover_url": {
+            "type": "string"
+          },
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "parsing_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "page_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "readability": {
+            "type": "object",
+            "required": [
+              "readable",
+              "reason"
+            ],
+            "properties": {
+              "readable": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "indexed_available",
+                  "library_disabled",
+                  "root_changed",
+                  "root_unavailable",
+                  "file_missing",
+                  "file_corrupt",
+                  "file_needs_review",
+                  "page_count_unknown"
+                ]
+              }
+            }
+          },
+          "user_state": {
+            "$ref": "#/components/schemas/UserState"
+          }
+        }
+      },
+      "ClientSeries": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "position"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      },
+      "ClientReadingContext": {
+        "type": "object",
+        "required": [
+          "work_id",
+          "library_id",
+          "edition",
+          "selection_reason",
+          "editions",
+          "preferred_edition_id",
+          "readable_alternative_id",
+          "series",
+          "previous_work_id",
+          "next_work_id",
+          "reading",
+          "requires_content_confirmation",
+          "requires_parsing_confirmation",
+          "pages_url"
+        ],
+        "properties": {
+          "work_id": {
+            "type": "string"
+          },
+          "library_id": {
+            "type": "string"
+          },
+          "edition": {
+            "$ref": "#/components/schemas/ClientEdition"
+          },
+          "selection_reason": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "continue",
+              "preferred",
+              "visible_fallback"
+            ]
+          },
+          "editions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientEdition"
+            }
+          },
+          "preferred_edition_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "readable_alternative_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientSeries"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous_work_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "next_work_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reading": {
+            "$ref": "#/components/schemas/ReadingState"
+          },
+          "requires_content_confirmation": {
+            "type": "boolean"
+          },
+          "requires_parsing_confirmation": {
+            "type": "boolean"
+          },
+          "pages_url": {
+            "type": "string"
+          }
+        }
+      },
+      "ClientPageList": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "directory_version",
+          "content_revision",
+          "parsing_revision"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "page_index",
+                "display_name",
+                "media_type"
+              ],
+              "properties": {
+                "page_index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "display_name": {
+                  "type": "string"
+                },
+                "media_type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "maximum": 1000000
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 24
+          },
+          "directory_version": {
+            "type": "string"
+          },
+          "content_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "parsing_revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      },
+      "ClientWorkSearch": {
+        "type": "object",
+        "required": [
+          "library_id"
+        ],
+        "properties": {
+          "library_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "query": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "all",
+              "favorites",
+              "hidden",
+              "continue"
+            ],
+            "default": "all"
+          },
+          "file_state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "missing",
+              "corrupt",
+              "needs_review"
+            ]
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "indexed_at",
+              "title",
+              "last_read_at"
+            ],
+            "default": "indexed_at"
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/PropertyFilter"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "maximum": 10000000
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 24
+          },
+          "snapshot_revision": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientWorkHit": {
+        "type": "object",
+        "required": [
+          "work_id",
+          "library_id",
+          "title",
+          "preferred_edition_id",
+          "entry_edition_id",
+          "resume_edition_id",
+          "edition",
+          "series",
+          "reading"
+        ],
+        "properties": {
+          "work_id": {
+            "type": "string"
+          },
+          "library_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "preferred_edition_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Null when the preferred Edition is outside the result visibility scope."
+          },
+          "entry_edition_id": {
+            "type": "string",
+            "description": "Best visible matching Edition. Pass explicitly when opening the result."
+          },
+          "resume_edition_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Most recently read visible unfinished Edition, independent of this hit's matching Edition."
+          },
+          "edition": {
+            "$ref": "#/components/schemas/ClientEdition"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClientSeries"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reading": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReadingState"
+              }
+            ],
+            "description": "Reading state of entry_edition_id."
+          }
+        }
+      },
+      "ClientWorkSearchResult": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total",
+          "snapshot_revision"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientWorkHit"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "maximum": 10000000
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 24
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "snapshot_revision": {
+            "type": "string"
+          }
+        }
       }
     },
     "parameters": {

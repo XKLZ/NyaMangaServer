@@ -6,12 +6,14 @@ type ClientIdentity struct {
 }
 
 type ClientScopeLibrary struct {
+	RootKey  string `json:"-"`
 	ID       string `json:"id"`
 	Role     string `json:"role"`
 	Disabled bool   `json:"disabled"`
 }
 
 type ClientConfiguration struct {
+	ACLRevision       int64
 	Identity          ClientIdentity
 	HealthMaintenance bool
 	BackgroundHold    bool
@@ -32,8 +34,8 @@ type ClientEdition struct {
 	ParsingRevision int64             `json:"parsing_revision"`
 	PageCount       *int              `json:"page_count"`
 	Readability     ClientReadability `json:"readability"`
+	UserState       UserState         `json:"user_state"`
 	FileState       string            `json:"-"`
-	Hidden          bool              `json:"-"`
 }
 
 type ClientSeries struct {

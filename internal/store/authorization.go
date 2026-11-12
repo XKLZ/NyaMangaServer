@@ -323,11 +323,12 @@ func scopedStatement(ctx context.Context, query string, args []any) (string, []a
 	}
 	actor := ":acl_actor"
 	actorValid := "1"
-	if d, ok := model.DeviceActor(ctx); ok {
+	device, isDevice := model.DeviceActor(ctx)
+	if isDevice {
 		actorValid = `EXISTS(SELECT 1 FROM main.device_sessions d JOIN main.accounts a ON a.id=d.account_id
 			JOIN main.account_profiles p ON p.account_id=a.id WHERE d.id=:acl_device AND d.account_id=:acl_actor AND d.revoked_at IS NULL
 			AND d.expires_at>:acl_device_now AND d.auth_revision=a.auth_revision AND p.enabled=1 AND p.must_change_password=0)`
-		args = append([]any{sql.Named("acl_device", d.ID), sql.Named("acl_device_now", d.Now().Unix())}, args...)
+		args = append([]any{sql.Named("acl_device", device.ID), sql.Named("acl_device_now", device.Now().Unix())}, args...)
 	}
 	defs := make([]string, 0, len(scopedReadTables))
 	for _, table := range scopedReadTables {
@@ -340,7 +341,16 @@ func scopedStatement(ctx context.Context, query string, args []any) (string, []a
 		case "import_child_requests", "work_discovery_runs", "source_searches", "series_discovery_runs":
 			projection = "r.rowid AS rowid,r.*"
 		}
-		defs = append(defs, table+" AS (SELECT "+projection+" FROM main."+table+" r WHERE ("+actorValid+") AND ("+aclAdminSQL(actor)+" OR (("+aclActiveSQL(actor)+") AND ("+scope+"))))")
+		gate := actorValid
+		if isDevice {
+			switch table {
+			case "edition_user_states", "reading_states", "reading_sessions", "reading_state_requests", "saved_searches", "tag_follows", "tag_follow_epochs":
+				gate += " AND r.account_id=" + actor
+			case "events", "gallery_highlight_connections", "account_security_audit":
+				gate = "0"
+			}
+		}
+		defs = append(defs, table+" AS (SELECT "+projection+" FROM main."+table+" r WHERE ("+gate+") AND ("+aclAdminSQL(actor)+" OR (("+aclActiveSQL(actor)+") AND ("+scope+"))))")
 	}
 	prefix := "WITH "
 	tail := trim

@@ -36,7 +36,11 @@ func TestDeviceLifecycle(t *testing.T) {
 	if e != nil || v.ExpiresAt != first.ExpiresAt {
 		t.Fatal(v, e)
 	}
-	now = time.Unix(first.ExpiresAt-model.DeviceRenewWindowSeconds+1, 0)
+	now = time.Unix(first.ExpiresAt-model.DeviceRenewWindowSeconds, 0)
+	if boundary, e := s.RenewDeviceSession(device); e != nil || boundary.ExpiresAt != first.ExpiresAt {
+		t.Fatal("renewal at exactly seven days should keep expiry", boundary, e)
+	}
+	now = now.Add(time.Second)
 	v, e = s.RenewDeviceSession(device)
 	if e != nil || v.ExpiresAt != now.Unix()+model.DeviceLifetimeSeconds {
 		t.Fatal(v, e)
@@ -44,6 +48,7 @@ func TestDeviceLifecycle(t *testing.T) {
 	if retry, e := s.RenewDeviceSession(device); e != nil || retry.ExpiresAt != v.ExpiresAt {
 		t.Fatal(retry, e)
 	}
+	now = time.Unix(v.ExpiresAt-model.DeviceRenewWindowSeconds+1, 0)
 	web := model.WithActor(ctx, *first.Account)
 	var wg sync.WaitGroup
 	wg.Go(func() {

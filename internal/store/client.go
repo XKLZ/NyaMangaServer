@@ -33,6 +33,9 @@ func (s *Store) ClientConfiguration(ctx context.Context) (model.ClientConfigurat
 			return v, e
 		}
 	}
+	if e = tx.QueryRowContext(ctx, "SELECT acl_revision FROM account_profiles WHERE account_id=? AND enabled=1", a.ID).Scan(&v.ACLRevision); e != nil {
+		return v, e
+	}
 	if v.Identity, e = clientIdentity(ctx, tx); e != nil {
 		return v, e
 	}
@@ -41,7 +44,7 @@ func (s *Store) ClientConfiguration(ctx context.Context) (model.ClientConfigurat
 		return v, e
 	}
 	v.Libraries = []model.ClientScopeLibrary{}
-	rows, e := scopeRows(ctx, tx, `SELECT l.id,CASE WHEN p.role='admin' THEN 'admin' ELSE g.role END,l.disabled
+	rows, e := scopeRows(ctx, tx, `SELECT l.id,CASE WHEN p.role='admin' THEN 'admin' ELSE g.role END,l.disabled,l.root_key
 		FROM libraries l JOIN account_profiles p ON p.account_id=? AND p.enabled=1 AND p.must_change_password=0
 		LEFT JOIN account_library_grants g ON g.account_id=p.account_id AND g.library_id=l.id
 		WHERE l.trashed_at IS NULL AND (p.role='admin' OR g.role IS NOT NULL) ORDER BY l.id`, a.ID)
@@ -51,7 +54,7 @@ func (s *Store) ClientConfiguration(ctx context.Context) (model.ClientConfigurat
 	defer rows.Close()
 	for rows.Next() {
 		var l model.ClientScopeLibrary
-		if e = rows.Scan(&l.ID, &l.Role, &l.Disabled); e != nil {
+		if e = rows.Scan(&l.ID, &l.Role, &l.Disabled, &l.RootKey); e != nil {
 			return v, e
 		}
 		v.Libraries = append(v.Libraries, l)

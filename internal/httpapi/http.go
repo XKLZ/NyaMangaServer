@@ -245,6 +245,10 @@ func (h *Handler) failure(w http.ResponseWriter, r *http.Request, e error) {
 	}
 }
 func (h *Handler) decode(w http.ResponseWriter, r *http.Request, v any) bool {
+	return h.decodeJSON(w, r, v, false)
+}
+
+func (h *Handler) decodeJSON(w http.ResponseWriter, r *http.Request, v any, strictObject bool) bool {
 	if media := strings.Split(r.Header.Get("Content-Type"), ";")[0]; media != "application/json" {
 		h.error(w, r, 415, "unsupported_media_type", "请使用JSON请求")
 		return false
@@ -279,6 +283,11 @@ func (h *Handler) decode(w http.ResponseWriter, r *http.Request, v any) bool {
 			}
 		}
 	}
+	if strictObject && !exactObjectKeys(raw, reflect.TypeOf(v).Elem()) {
+		h.error(w, r, 400, "invalid_request", "请求JSON字段无效或重复")
+		return false
+	}
+
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
 	e := d.Decode(v)
@@ -302,6 +311,31 @@ func (h *Handler) decode(w http.ResponseWriter, r *http.Request, v any) bool {
 	}
 	return true
 }
+func exactObjectKeys(raw []byte, target reflect.Type) bool {
+	d := json.NewDecoder(bytes.NewReader(raw))
+	if token, e := d.Token(); e != nil || token != json.Delim('{') {
+		return false
+	}
+	fields := make(map[string]bool, target.NumField())
+	for f := range target.Fields() {
+		name, _, _ := strings.Cut(f.Tag.Get("json"), ",")
+		fields[name] = true
+	}
+	for d.More() {
+		token, e := d.Token()
+		name, ok := token.(string)
+		if e != nil || !ok || !fields[name] {
+			return false
+		}
+		fields[name] = false
+		var value json.RawMessage
+		if e = d.Decode(&value); e != nil {
+			return false
+		}
+	}
+	return true
+}
+
 func (h *Handler) origin(w http.ResponseWriter, r *http.Request) bool {
 	if r.Header.Get("Origin") != h.c.PublicURL {
 		h.error(w, r, 403, "origin_rejected", "请求来源不允许")

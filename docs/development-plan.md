@@ -15,16 +15,17 @@
 | 账号级标签关注、个人目录与私有SSE | [标签关注](tag-follows.md) |
 | 本地画廊高亮只读协议、设置与独立GM脚本 | [本地画廊高亮](local-gallery-highlight.md) |
 | 搜索、过滤、收藏隐藏、账号保存条件 | [搜索](search.md) |
+| 设备认证、作品查询、版本化页目录和阅读状态 | [客户端协议](client-foundation.md) |
 | Series／Work／Edition／File及人工整理 | [领域规则](domain-rules.md)、[Work模型](work-edition-model.md) |
 | 版本／系列推荐及显式人工决定 | [版本管理](version-management.md)、[系列工作台](series-management.md) |
 | 完整导入、来源比较和逐关审核 | [导入流程](import-workflow.md)、[来源查询](import-source-search.md) |
 | 管理导航、当前书库、维护及设置 | [导航](navigation-consolidation.md)、[书库范围](current-library-context.md) |
 
-推荐只提供建议，正式关系和来源仍经人工确认；扫描始终离线。网页用于管理，完整阅读与漫画展示交给后续客户端。
+推荐只提供建议，正式关系和来源仍经人工确认；扫描始终离线。网页用于管理。在线逐页读取由客户端协议提供。
 
 ## 尚未交付的能力
 
-- 完整阅读器及对应客户端体验；账号级阅读状态、回退／重置和版本隔离接口已交付。
+- 完整阅读器、下载、离线同步和真实客户端联调。
 - 面向用户的向量检索；现有本地推荐特征不等于公开向量搜索能力。
 - 自动备份与远端备份存储；手动整实例备份／恢复已交付，NAS匿名标准恢复见[测试版验证](../deploy/BETA.md)。
 - TreeC转换由独立工具维护，主项目仅承接标准恢复包；不在主项目再建专用转换路径。

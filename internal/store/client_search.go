@@ -56,7 +56,7 @@ func clientWorkSearchCTE(account string, v model.ClientSearchInput, node *model.
 	args := []any{account, account, v.LibraryID, hidden}
 	where := "1"
 	if v.Scope == "favorites" {
-		where += " AND favorite=1"
+		where += " AND b.favorite=1"
 	}
 	if v.FileState != "" {
 		where += " AND b.file_state=?"
@@ -70,9 +70,9 @@ func clientWorkSearchCTE(account string, v model.ClientSearchInput, node *model.
 	if v.Scope == "continue" {
 		workFilter = " WHERE m.resume_edition_id IS NOT NULL"
 	}
-	return `WITH visible(edition_id,display_title,cover_revision,content_revision,parsing_revision,page_count,file_state,hidden,
-		work_id,preferred_id,indexed_at,favorite,last_read_at,completed) AS MATERIALIZED (
-		SELECT ` + clientEditionColumns + `,ed.work_id,w.preferred_edition_id,f.indexed_at,COALESCE(u.favorite,0),r.last_read_at,COALESCE(r.completed,0)
+	return `WITH visible(edition_id,display_title,cover_revision,content_revision,parsing_revision,page_count,file_state,hidden,favorite,state_revision,
+		work_id,preferred_id,indexed_at,last_read_at,completed) AS MATERIALIZED (
+		SELECT ` + clientEditionColumns + `,ed.work_id,w.preferred_edition_id,f.indexed_at,r.last_read_at,COALESCE(r.completed,0)
 		FROM editions ed ` + clientEditionJoins + ` LEFT JOIN reading_states r ON r.edition_id=ed.id AND r.account_id=?
 		WHERE ed.library_id=? AND ed.trashed_at IS NULL AND COALESCE(u.hidden,0)=?
 	), eligible AS (
@@ -137,7 +137,7 @@ func (s *Store) ClientWorkSearch(ctx context.Context, v model.ClientSearchInput,
 	if v.Order == "asc" {
 		direction = " ASC"
 	}
-	rows, e := scopeRows(ctx, tx, cte+`SELECT x.edition_id,x.display_title,x.cover_revision,x.content_revision,x.parsing_revision,x.page_count,x.file_state,x.hidden,
+	rows, e := scopeRows(ctx, tx, cte+`SELECT x.edition_id,x.display_title,x.cover_revision,x.content_revision,x.parsing_revision,x.page_count,x.file_state,x.hidden,x.favorite,x.state_revision,
 		x.work_id,x.preferred_edition_id,x.resume_edition_id,COALESCE(se.id,''),COALESCE(se.name,''),COALESCE(sm.position,0),
 		rs.page_index,CASE WHEN rs.revision IS NULL THEN x.page_count ELSE rs.recorded_page_count END,COALESCE(rs.content_revision,x.content_revision),
 		COALESCE(rs.parsing_revision,x.parsing_revision),COALESCE(rs.completed,0),rs.completed_at,rs.last_read_at,COALESCE(rs.read_count,0),COALESCE(rs.revision,0)

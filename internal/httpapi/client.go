@@ -54,16 +54,25 @@ func (h *Handler) clientCapabilities(w http.ResponseWriter, r *http.Request) {
 		return clientFeature{Supported: supported, Enabled: enabled, Allowed: allowed, Available: reason == "available", Reason: reason}
 	}
 	libraryAccess := len(v.Libraries) > 0
-	sourceAccess := false
+	sourceAccess, mappedSource := false, false
 	for _, l := range v.Libraries {
-		sourceAccess = sourceAccess || !l.Disabled
+		if !l.Disabled && h.catalog != nil {
+			sourceAccess = true
+			_, err := h.catalog.Root(l.RootKey)
+			mappedSource = mappedSource || err == nil
+		}
 	}
 	pages := feature(true, h.catalog != nil, libraryAccess, false)
-	if pages.Available && !sourceAccess {
-		pages.Available, pages.Reason = false, "library_disabled"
+	if pages.Available {
+		switch {
+		case !sourceAccess:
+			pages.Available, pages.Reason = false, "library_disabled"
+		case !mappedSource:
+			pages.Available, pages.Reason = false, "root_unavailable"
+		}
 	}
 	h.json(w, 200, map[string]any{
-		"protocol_version": clientProtocol, "instance": v.Identity, "account_id": a.ID, "acl_revision": a.ACLRevision,
+		"protocol_version": clientProtocol, "instance": v.Identity, "account_id": a.ID, "acl_revision": v.ACLRevision,
 		"libraries": v.Libraries, "maintenance_active": v.HealthMaintenance, "background_hold": v.BackgroundHold,
 		"features": map[string]clientFeature{
 			"device_sessions": feature(true, true, true, true),
