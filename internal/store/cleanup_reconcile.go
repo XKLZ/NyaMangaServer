@@ -63,29 +63,8 @@ func ReconcileCleanup(ctx context.Context, dir, id string, apply bool, files fs.
 	if app != ApplicationID || baseline != BaselineID {
 		return out, model.ErrInput
 	}
-	names, e := fs.Glob(files, "*.sql")
-	if e != nil || len(names) != 27 {
-		return out, model.ErrInput
-	}
-	var ledgerCount int
-	if e = tx.QueryRowContext(ctx, "SELECT count(*) FROM schema_migrations").Scan(&ledgerCount); e != nil {
+	if e = validateOfflineMaintenanceLedger(ctx, tx, files); e != nil {
 		return out, e
-	}
-	if ledgerCount != len(names) {
-		return out, model.ErrInput
-	}
-	for i, name := range names {
-		raw, e := fs.ReadFile(files, name)
-		if e != nil {
-			return out, e
-		}
-		var hash string
-		if e = tx.QueryRowContext(ctx, "SELECT checksum FROM schema_migrations WHERE version=?", i+1).Scan(&hash); e != nil {
-			return out, e
-		}
-		if hash != fmt.Sprintf("%x", sha256.Sum256(raw)) {
-			return out, model.ErrInput
-		}
 	}
 	var busy int
 	if e = tx.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM jobs WHERE state IN('running','queued'))+(SELECT count(*) FROM health_state WHERE phase!='idle')+(SELECT count(*) FROM instance_state WHERE owner IS NOT NULL)+(SELECT count(*) FROM job_resources WHERE job_id=?)`, id).Scan(&busy); e != nil {

@@ -98,7 +98,7 @@ func TestStorageRedundantCacheOriginalsAndStatistics(t *testing.T) {
 	if result["deleted_files"].(float64) < 1 || result["released_bytes"].(float64) < 1 {
 		t.Fatal(result)
 	}
-	assets, e := store.MigrationOriginalAssets(ctx, s.c.DataDir)
+	assets, e := store.MigrationOriginalAssets(ctx, s.c.DataDir, migrations.Files)
 	if e != nil || len(assets) != 1 {
 		t.Fatal(assets, e)
 	}
@@ -152,7 +152,10 @@ func TestStorageOriginalMutationAndNewReferenceProtect(t *testing.T) {
 			storageWrite(t, archive, "one.png", raw)
 			manifest := filepath.Join(archive, "manifest.json")
 			instanceJSON(manifest, MigrationOriginalManifest{Format: 1, Files: []model.InstanceFile{{Key: "one.png", Size: int64(len(raw)), SHA256: digest}}})
-			assets, _ := store.MigrationOriginalAssets(ctx, s.c.DataDir)
+			assets, e := store.MigrationOriginalAssets(ctx, s.c.DataDir, migrations.Files)
+			if e != nil {
+				t.Fatal(e)
+			}
 			if _, e = VerifyMigrationOriginals(ctx, s.c, manifest, assets); e != nil {
 				t.Fatal(e)
 			}
