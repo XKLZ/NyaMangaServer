@@ -20,16 +20,24 @@ func (w *writeDatabase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.
 	if e != nil {
 		return nil, e
 	}
+	device, isDevice := model.DeviceActor(ctx)
+	if isDevice {
+		a, _ := model.Actor(ctx)
+		if e = checkDeviceActor(ctx, tx, a.ID, device); e != nil {
+			tx.Rollback()
+			return nil, e
+		}
+	}
 	if w.version >= 25 {
 		a, ok := model.Actor(ctx)
 		var id any
 		if ok {
 			id = a.ID
 		}
-		_, e = tx.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0 WHERE singleton=1", id, model.PasswordChange(ctx))
+		_, e = tx.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0,device=? WHERE singleton=1", id, model.PasswordChange(ctx), isDevice)
 		if e != nil && strings.Contains(e.Error(), "no such table: temp.acl_actor") {
 			if e = installAuthorizationOn(ctx, tx); e == nil {
-				_, e = tx.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0 WHERE singleton=1", id, model.PasswordChange(ctx))
+				_, e = tx.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0,device=? WHERE singleton=1", id, model.PasswordChange(ctx), isDevice)
 			}
 		}
 		if e != nil {
@@ -147,7 +155,7 @@ func installAuthorizationOn(ctx context.Context, c interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 }) error {
 	var e error
-	if _, e = c.ExecContext(ctx, `CREATE TEMP TABLE IF NOT EXISTS acl_actor(singleton INTEGER PRIMARY KEY,account_id TEXT,password_change INTEGER NOT NULL,source_edition TEXT,account_management INTEGER NOT NULL);INSERT OR IGNORE INTO acl_actor VALUES(1,NULL,0,NULL,0);CREATE TEMP TABLE IF NOT EXISTS acl_deleted(kind TEXT,id TEXT,library_id TEXT,PRIMARY KEY(kind,id))`); e != nil {
+	if _, e = c.ExecContext(ctx, `CREATE TEMP TABLE IF NOT EXISTS acl_actor(singleton INTEGER PRIMARY KEY,account_id TEXT,password_change INTEGER NOT NULL,source_edition TEXT,account_management INTEGER NOT NULL,device INTEGER NOT NULL);INSERT OR IGNORE INTO acl_actor VALUES(1,NULL,0,NULL,0,0);CREATE TEMP TABLE IF NOT EXISTS acl_deleted(kind TEXT,id TEXT,library_id TEXT,PRIMARY KEY(kind,id))`); e != nil {
 		return e
 	}
 	rows, e := c.QueryContext(ctx, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
@@ -214,7 +222,7 @@ func installAuthorizationOn(ctx context.Context, c interface {
 			}
 			credentialPermit := "(SELECT password_change FROM temp.acl_actor WHERE singleton=1)=1"
 			if table == "instance_state" && op == "UPDATE" {
-				principalAllowed += " OR (" + credentialPermit + " AND (" + allowed + "))"
+				principalAllowed += " OR ((" + credentialPermit + " OR (SELECT device FROM temp.acl_actor WHERE singleton=1)=1) AND (" + allowed + "))"
 			}
 			if table == "accounts" && op == "UPDATE" {
 				principalAllowed += " OR (" + credentialPermit + " AND OLD.id=" + actor + " AND NEW.id=OLD.id AND NEW.singleton=OLD.singleton)"
@@ -225,17 +233,27 @@ func installAuthorizationOn(ctx context.Context, c interface {
 			if table == "gallery_highlight_connections" && op == "UPDATE" {
 				principalAllowed += " OR (" + credentialPermit + " AND OLD.account_id=" + actor + " AND NEW.account_id=OLD.account_id AND NEW.token_hash=OLD.token_hash AND NEW.revoked_at IS NOT NULL)"
 			}
+			if table == "device_sessions" && op == "UPDATE" {
+				principalAllowed = "OLD.account_id=" + actor + " AND NEW.account_id=OLD.account_id"
+			}
 			if table == "account_security_audit" && op == "INSERT" {
 				principalAllowed += " OR (" + credentialPermit + " AND NEW.actor_id=" + actor + " AND NEW.target_id=" + actor + " AND NEW.action='change_password')"
 			}
 			switch table {
-			case "accounts", "account_profiles", "account_library_grants", "account_security_audit", "sessions", "gallery_highlight_connections", "jobs", "import_batches", "job_resources", "events", "instance_state", "enhancement_transitions", "enhancement_settings":
+			case "accounts", "account_profiles", "account_library_grants", "account_security_audit", "sessions", "gallery_highlight_connections", "device_sessions", "jobs", "import_batches", "job_resources", "events", "instance_state", "enhancement_transitions", "enhancement_settings":
 				principalAllowed += " OR (SELECT account_management FROM temp.acl_actor WHERE singleton=1)=1"
 			}
 			statement := fmt.Sprintf(`CREATE TEMP TRIGGER IF NOT EXISTS %q BEFORE %s ON main.%q WHEN %s IS NOT NULL AND NOT (%s OR (%s)) BEGIN SELECT RAISE(ABORT,'forbidden:%s:%s');END`, "acl_"+table+"_"+op, op, table, actor, aclAdminSQL(actor), principalAllowed, table, op)
 			if _, e = c.ExecContext(ctx, statement); e != nil {
 				return fmt.Errorf("install authorization %s: %w", table, e)
 			}
+			deviceAllowed := deviceTableWrite(table, op, row, actor, credentialPermit)
+			statement = fmt.Sprintf(`CREATE TEMP TRIGGER IF NOT EXISTS %q BEFORE %s ON main.%q WHEN (SELECT device FROM temp.acl_actor WHERE singleton=1)=1 AND NOT (%s) BEGIN SELECT RAISE(ABORT,'forbidden:device');END`,
+				"acl_device_"+table+"_"+op, op, table, deviceAllowed)
+			if _, e = c.ExecContext(ctx, statement); e != nil {
+				return fmt.Errorf("install device authorization %s: %w", table, e)
+			}
+
 		}
 	}
 	for _, parent := range []string{"editions", "works", "series", "jobs", "import_batches"} {
@@ -304,6 +322,13 @@ func scopedStatement(ctx context.Context, query string, args []any) (string, []a
 		return "SELECT * FROM _authorization_bypass_rejected", nil
 	}
 	actor := ":acl_actor"
+	actorValid := "1"
+	if d, ok := model.DeviceActor(ctx); ok {
+		actorValid = `EXISTS(SELECT 1 FROM main.device_sessions d JOIN main.accounts a ON a.id=d.account_id
+			JOIN main.account_profiles p ON p.account_id=a.id WHERE d.id=:acl_device AND d.account_id=:acl_actor AND d.revoked_at IS NULL
+			AND d.expires_at>:acl_device_now AND d.auth_revision=a.auth_revision AND p.enabled=1 AND p.must_change_password=0)`
+		args = append([]any{sql.Named("acl_device", d.ID), sql.Named("acl_device_now", d.Now().Unix())}, args...)
+	}
 	defs := make([]string, 0, len(scopedReadTables))
 	for _, table := range scopedReadTables {
 		scope := aclTableScope(table, "r.", actor, false)
@@ -315,7 +340,7 @@ func scopedStatement(ctx context.Context, query string, args []any) (string, []a
 		case "import_child_requests", "work_discovery_runs", "source_searches", "series_discovery_runs":
 			projection = "r.rowid AS rowid,r.*"
 		}
-		defs = append(defs, table+" AS (SELECT "+projection+" FROM main."+table+" r WHERE "+aclAdminSQL(actor)+" OR (("+aclActiveSQL(actor)+") AND ("+scope+")))")
+		defs = append(defs, table+" AS (SELECT "+projection+" FROM main."+table+" r WHERE ("+actorValid+") AND ("+aclAdminSQL(actor)+" OR (("+aclActiveSQL(actor)+") AND ("+scope+"))))")
 	}
 	prefix := "WITH "
 	tail := trim
@@ -511,6 +536,9 @@ func (w *writeDatabase) QueryContext(ctx context.Context, query string, args ...
 	return w.db.QueryContext(ctx, query, args...)
 }
 func (w *writeDatabase) Conn(ctx context.Context) (*sql.Conn, error) {
+	if _, device := model.DeviceActor(ctx); device {
+		return nil, model.ErrForbidden
+	}
 	c, e := w.db.Conn(ctx)
 	if e != nil {
 		return nil, e
@@ -521,10 +549,10 @@ func (w *writeDatabase) Conn(ctx context.Context) (*sql.Conn, error) {
 		if ok {
 			id = a.ID
 		}
-		_, e = c.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0 WHERE singleton=1", id, model.PasswordChange(ctx))
+		_, e = c.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0,device=0 WHERE singleton=1", id, model.PasswordChange(ctx))
 		if e != nil && strings.Contains(e.Error(), "no such table: temp.acl_actor") {
 			if e = installAuthorizationOn(ctx, c); e == nil {
-				_, e = c.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0 WHERE singleton=1", id, model.PasswordChange(ctx))
+				_, e = c.ExecContext(ctx, "UPDATE temp.acl_actor SET account_id=?,password_change=?,source_edition=NULL,account_management=0,device=0 WHERE singleton=1", id, model.PasswordChange(ctx))
 			}
 		}
 		if e != nil {
@@ -539,6 +567,9 @@ func requireLibrary(ctx context.Context, q queryer, library string, write bool) 
 	a, ok := model.Actor(ctx)
 	if !ok {
 		return nil
+	}
+	if _, device := model.DeviceActor(ctx); device && write {
+		return model.ErrForbidden
 	}
 	var visible, allowed bool
 	e := q.QueryRowContext(ctx, "SELECT "+aclAdminSQL("?")+" OR "+aclLibrarySQL("?", "?", false), a.ID, a.ID, library).Scan(&visible)

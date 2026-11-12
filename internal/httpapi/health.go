@@ -144,7 +144,7 @@ func (h *Handler) healthAdmission(w http.ResponseWriter, r *http.Request) (func(
 			return func() {}, true
 		}
 	}
-	if strings.HasPrefix(path, "/api/v1/maintenance/health-") || path == "/api/v1/auth/logout" {
+	if strings.HasPrefix(path, "/api/v1/maintenance/health-") || path == "/api/v1/auth/logout" && r.Header.Get("Authorization") == "" {
 		return func() {}, true
 	}
 	if r.Method == "POST" && strings.HasPrefix(path, "/api/v1/jobs/") {

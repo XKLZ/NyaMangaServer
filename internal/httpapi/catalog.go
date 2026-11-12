@@ -80,6 +80,16 @@ func (h *Handler) libraries(w http.ResponseWriter, r *http.Request) {
 			h.catalogFailure(w, r, e)
 			return
 		}
+		if _, device := model.DeviceActor(r.Context()); device {
+			items := make([]deviceLibrary, 0, len(v))
+			for _, l := range v {
+				if l.TrashedAt == nil {
+					items = append(items, deviceLibrary{ID: l.ID, DisplayName: l.Name, Disabled: l.Disabled, Availability: h.catalog.Availability(l)})
+				}
+			}
+			h.json(w, 200, map[string]any{"items": items})
+			return
+		}
 		for i := range v {
 			v[i].Availability = h.catalog.Availability(v[i])
 		}

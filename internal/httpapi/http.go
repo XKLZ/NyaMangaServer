@@ -42,6 +42,7 @@ type sessionKey struct{}
 type identity struct {
 	raw     string
 	session *model.Session
+	device  *model.DeviceSession
 }
 type attempt struct {
 	start time.Time
@@ -94,6 +95,7 @@ func New(c config.Config, svc *auth.Service, assets fs.FS, logger *slog.Logger, 
 		h.catalogRoutes(protected)
 	}
 	h.accountRoutes(protected)
+	h.registerDeviceRoutes()
 	protected.HandleFunc("/api/v1/auth/session", h.method("GET", h.session))
 	protected.HandleFunc("/api/v1/auth/logout", h.method("POST", h.logout))
 	protected.HandleFunc("/api/v1/auth/password", h.method("PUT", h.password))
@@ -213,6 +215,11 @@ func (h *Handler) failure(w http.ResponseWriter, r *http.Request, e error) {
 		h.error(w, r, 422, "invalid_input", "输入无效")
 	case errors.Is(e, model.ErrNotFound):
 		h.error(w, r, 404, "not_found", "资源不存在")
+	case errors.Is(e, model.ErrDeviceLimit):
+		h.error(w, r, 409, "device_limit_reached", "有效设备已达上限，请撤销旧设备后再登录")
+	case errors.Is(e, model.ErrDeviceSession):
+		w.Header().Set("WWW-Authenticate", `Bearer realm="nyamangaserver-device"`)
+		h.error(w, r, 401, "unauthenticated", "设备会话无效或已过期，请重新登录")
 	case errors.Is(e, auth.ErrSession):
 		h.error(w, r, 401, "unauthenticated", "会话已过期，请重新登录")
 	case errors.Is(e, auth.ErrCredentials):
@@ -330,6 +337,10 @@ func (h *Handler) limited(w http.ResponseWriter, r *http.Request) bool {
 }
 func (h *Handler) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if headers := r.Header.Values("Authorization"); len(headers) != 0 {
+			h.authenticateDevice(w, r, next, headers)
+			return
+		}
 		cookie, e := r.Cookie(h.cookieName())
 		if e != nil {
 			h.error(w, r, 401, "unauthenticated", "请先登录")
@@ -360,7 +371,7 @@ func (h *Handler) authenticate(next http.Handler) http.Handler {
 			return
 		}
 		r = r.WithContext(model.WithActor(r.Context(), *v.Account))
-		if v.Account.MustChangePassword && r.URL.Path != "/api/v1/auth/session" && r.URL.Path != "/api/v1/auth/password" && r.URL.Path != "/api/v1/auth/logout" {
+		if v.Account.MustChangePassword && !passwordChangeRoute(r.URL.Path) {
 			h.failure(w, r, model.ErrPasswordChangeRequired)
 			return
 		}
@@ -377,7 +388,7 @@ func (h *Handler) authenticate(next http.Handler) http.Handler {
 			defer cancel()
 			r = r.WithContext(ctx)
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), sessionKey{}, identity{cookie.Value, v})))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), sessionKey{}, identity{raw: cookie.Value, session: v})))
 	})
 }
 func (h *Handler) status(w http.ResponseWriter, r *http.Request) {
@@ -451,10 +462,22 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 }
 func (h *Handler) session(w http.ResponseWriter, r *http.Request) {
 	v := r.Context().Value(sessionKey{}).(identity)
+	if v.device != nil {
+		h.json(w, 200, map[string]any{"device": v.device, "actor": deviceActorResponse(v.device.Account)})
+		return
+	}
 	h.sessionJSON(w, v.raw, *v.session)
 }
 func (h *Handler) logout(w http.ResponseWriter, r *http.Request) {
 	v := r.Context().Value(sessionKey{}).(identity)
+	if v.device != nil {
+		if e := h.svc.RevokeDeviceSession(r.Context(), v.device.ID); e != nil {
+			h.failure(w, r, e)
+			return
+		}
+		w.WriteHeader(204)
+		return
+	}
 	if e := h.svc.Logout(r.Context(), v.session.Hash); e != nil {
 		h.failure(w, r, e)
 		return
@@ -478,11 +501,14 @@ func (h *Handler) password(w http.ResponseWriter, r *http.Request) {
 		h.error(w, r, 400, "invalid_request", "缺少必填字段")
 		return
 	}
-	if e := h.svc.ChangePassword(r.Context(), v.session.AccountID, *in.Current, *in.Next); e != nil {
+	a, _ := model.Actor(r.Context())
+	if e := h.svc.ChangePassword(r.Context(), a.ID, *in.Current, *in.Next); e != nil {
 		h.failure(w, r, e)
 		return
 	}
-	h.clearCookie(w)
+	if v.device == nil {
+		h.clearCookie(w)
+	}
 	h.json(w, 200, map[string]bool{"reauthenticate": true})
 }
 func (h *Handler) roots(w http.ResponseWriter, r *http.Request) {

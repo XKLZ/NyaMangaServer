@@ -152,28 +152,9 @@ func (s *Service) Login(ctx context.Context, password string) (string, model.Ses
 	return s.LoginUsername(ctx, "", password)
 }
 func (s *Service) LoginUsername(ctx context.Context, username, password string) (string, model.Session, error) {
-	if len(password) > 512 || !utf8.ValidString(password) {
-		return "", model.Session{}, ErrCredentials
-	}
-	var a *model.Account
-	var e error
-	if username == "" {
-		a, e = s.store.Account(ctx)
-	} else {
-		a, e = s.store.AccountByUsername(ctx, username)
-	}
+	a, e := s.verifyLogin(ctx, username, password)
 	if e != nil {
 		return "", model.Session{}, e
-	}
-	if a == nil || !a.Enabled || a.PasswordHash == "" {
-		return "", model.Session{}, ErrCredentials
-	}
-	ok, e := s.Hasher.Verify(ctx, a.PasswordHash, password)
-	if e != nil {
-		return "", model.Session{}, fmt.Errorf("verify credential: %w", e)
-	}
-	if !ok {
-		return "", model.Session{}, ErrCredentials
 	}
 	raw, v, e := s.newSession(a.ID)
 	if e != nil {
@@ -190,6 +171,32 @@ func (s *Service) LoginUsername(ctx context.Context, username, password string) 
 		return "", v, e
 	}
 	return raw, v, nil
+}
+func (s *Service) verifyLogin(ctx context.Context, username, password string) (*model.Account, error) {
+	if len(password) > 512 || !utf8.ValidString(password) {
+		return nil, ErrCredentials
+	}
+	var a *model.Account
+	var e error
+	if username == "" {
+		a, e = s.store.Account(ctx)
+	} else {
+		a, e = s.store.AccountByUsername(ctx, username)
+	}
+	if e != nil {
+		return nil, e
+	}
+	if a == nil || !a.Enabled || a.PasswordHash == "" {
+		return nil, ErrCredentials
+	}
+	ok, e := s.Hasher.Verify(ctx, a.PasswordHash, password)
+	if e != nil {
+		return nil, fmt.Errorf("verify credential: %w", e)
+	}
+	if !ok {
+		return nil, ErrCredentials
+	}
+	return a, nil
 }
 func (s *Service) Session(ctx context.Context, raw string) (*model.Session, error) {
 	if len(raw) != 43 {

@@ -63,7 +63,7 @@ func TestMigrationAndConnectionPolicy(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer again.Close()
-	if again.Version != 27 {
+	if again.Version != 28 {
 		t.Fatal(again.Version)
 	}
 	b, e := migrations.Files.ReadFile("001_foundation.sql")

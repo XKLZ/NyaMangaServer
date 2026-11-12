@@ -9,6 +9,9 @@ import (
 // Complete method/pattern inventory. Every unlisted protected route defaults to
 // administrator-only; registering a new handler cannot silently grant access.
 var routeAuthorization = map[string]map[string]string{
+	deviceSessionsPath:                              {"GET": "self", "POST": "self"},
+	deviceSessionsPath + "/{id}":                    {"DELETE": "self"},
+	deviceRenewPath:                                 {"POST": "self"},
 	"/api/v1/editions/{id}/encoding-preview":        {"GET": "editor"},
 	"/api/v1/editions/{id}/encoding":                {"PUT": "editor"},
 	"/api/v1/books/{id}/encoding-preview":           {"GET": "editor"},

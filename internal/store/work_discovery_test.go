@@ -115,7 +115,7 @@ func TestDiscoveryUpgradePreservesEightAndRollsBack(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer s.Close()
-	if s.Version != 27 {
+	if s.Version != 28 {
 		t.Fatal(s.Version)
 	}
 	var n int
