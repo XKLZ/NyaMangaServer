@@ -84,12 +84,14 @@ type pageRecord struct {
 }
 
 type pageWaiter struct {
-	ctx context.Context
+	ctx     context.Context
+	display bool
 }
 
 type pageFlight struct {
 	done    chan struct{}
 	cancel  context.CancelFunc
+	ticket  *imageTicket
 	waiters map[*pageWaiter]struct{}
 	output  *pageBytes
 	etag    string
@@ -161,7 +163,7 @@ func (b *Budget) leasePageLocked(output *pageBytes, key PageKey, tag string) Pag
 
 // Page loads and validates one archive member. Only source-verified keys are
 // accepted from the library. The caller rechecks access before writing headers.
-func (p *Pool) Page(ctx context.Context, key PageKey, matches func(string) bool) (PageImage, error) {
+func (p *Pool) Page(ctx context.Context, key PageKey, display bool, matches func(string) bool) (PageImage, error) {
 	key.representation = pageRepresentation
 	b := p.budget
 	b.mu.Lock()
@@ -188,12 +190,19 @@ func (p *Pool) Page(ctx context.Context, key PageKey, matches func(string) bool)
 	}
 	f := b.flights[key]
 	if f == nil {
-		work, cancel := context.WithCancel(context.Background())
-		f = &pageFlight{done: make(chan struct{}), cancel: cancel, waiters: make(map[*pageWaiter]struct{})}
+		deadline, ok := ctx.Value(imageDeadlineKey{}).(time.Time)
+		if !ok {
+			deadline = now.Add(ImageWait)
+		}
+		work, cancel := context.WithCancel(WithImageDeadline(context.Background(), deadline))
+		f = &pageFlight{done: make(chan struct{}), cancel: cancel, ticket: b.scheduler.enqueue(display), waiters: make(map[*pageWaiter]struct{})}
 		b.flights[key] = f
 		go p.loadPage(work, key, f)
 	}
-	w := &pageWaiter{ctx: ctx}
+	w := &pageWaiter{ctx: ctx, display: display}
+	if display {
+		f.ticket.setDisplay(true)
+	}
 	f.waiters[w] = struct{}{}
 	b.mu.Unlock()
 	select {
@@ -204,7 +213,13 @@ func (p *Pool) Page(ctx context.Context, key PageKey, matches func(string) bool)
 	defer b.mu.Unlock()
 	delete(f.waiters, w)
 	defer func() {
-		if len(f.waiters) == 0 {
+		if len(f.waiters) != 0 {
+			display := false
+			for waiter := range f.waiters {
+				display = display || waiter.display && waiter.ctx.Err() == nil
+			}
+			f.ticket.setDisplay(display)
+		} else {
 			f.cancel()
 			if b.flights[key] == f {
 				delete(b.flights, key)
@@ -227,16 +242,15 @@ func (p *Pool) Page(ctx context.Context, key PageKey, matches func(string) bool)
 func (p *Pool) loadPage(ctx context.Context, key PageKey, f *pageFlight) {
 	var output *pageBytes
 	load := func() error {
-		select {
-		case p.imageSlots <- struct{}{}:
-		case <-ctx.Done():
-			return ctx.Err()
+		release, err := f.ticket.wait(ctx)
+		if err != nil {
+			return err
 		}
-		defer func() { <-p.imageSlots }()
+		defer release()
 		if p.beforePageDecode != nil {
 			p.beforePageDecode(ctx, key)
 		}
-		_, _, _, err := p.decodeArchiveImage(ctx, key.Root, key.Path, key.Source.Size, key.Source.Mtime, key.Entry, false, &key.Source,
+		_, _, _, err = p.decodeArchiveImage(ctx, key.Root, key.Path, key.Source.Size, key.Source.Mtime, key.Entry, false, &key.Source,
 			func(memory *imageMemory, data []byte, kind string) error {
 				var err error
 				output, err = memory.retain(data, kind)

@@ -34,7 +34,7 @@ func TestPageVerificationSurvivesByteEvictionAndChargesResponse(t *testing.T) {
 			var decodes atomic.Int64
 			p.beforePageDecode = func(context.Context, PageKey) { decodes.Add(1) }
 			ctx := context.Background()
-			page, e := p.Page(ctx, key, func(string) bool { return false })
+			page, e := p.Page(ctx, key, true, func(string) bool { return false })
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -56,12 +56,12 @@ func TestPageVerificationSurvivesByteEvictionAndChargesResponse(t *testing.T) {
 				t.Fatal(e)
 			}
 			free()
-			second, e := p.Page(ctx, key, func(tag string) bool { return tag == page.ETag })
+			second, e := p.Page(ctx, key, true, func(tag string) bool { return tag == page.ETag })
 			if e != nil || !second.NotModified || len(second.Bytes) != 0 || decodes.Load() != 1 {
 				t.Fatal("verification reused decode or lost validator", second, decodes.Load(), e)
 			}
 			p.Sweep(time.Now().Add(PageValidationIdle))
-			third, e := p.Page(ctx, key, func(tag string) bool { return tag == page.ETag })
+			third, e := p.Page(ctx, key, true, func(tag string) bool { return tag == page.ETag })
 			if e != nil || third.NotModified || decodes.Load() != 2 {
 				t.Fatal("idle record did not expire", third, decodes.Load(), e)
 			}
@@ -118,7 +118,7 @@ func TestPageCoalescingCancelsOnlyAbandonedWork(t *testing.T) {
 			call := func(ctx context.Context) <-chan result {
 				c := make(chan result, 1)
 				go func() {
-					v, e := p.Page(ctx, key, func(string) bool { return false })
+					v, e := p.Page(ctx, key, true, func(string) bool { return false })
 					c <- result{v, e}
 				}()
 				return c

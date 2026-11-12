@@ -17,12 +17,11 @@ func (p *Pool) TagImage(ctx context.Context, raw []byte, role string) (data []by
 	if role != "foreground" && role != "background" {
 		return nil, 0, 0, "", ErrImage
 	}
-	select {
-	case p.imageSlots <- struct{}{}:
-	case <-ctx.Done():
-		return nil, 0, 0, "", ctx.Err()
+	release, err := p.enterImage(ctx)
+	if err != nil {
+		return nil, 0, 0, "", err
 	}
-	defer func() { <-p.imageSlots }()
+	defer release()
 	cfg, format, e := image.DecodeConfig(bytes.NewReader(raw))
 	if e != nil || (format != "png" && format != "jpeg" && format != "webp" && format != "bmp") {
 		return nil, 0, 0, "", ErrImage

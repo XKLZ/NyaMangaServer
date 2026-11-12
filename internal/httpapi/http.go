@@ -49,6 +49,8 @@ type attempt struct {
 	count int
 }
 type Handler struct {
+	pageRequests                      imageRequests
+	imageWait                         time.Duration // deterministic test override
 	requestTimeout                    time.Duration // test injection; zero retains ordinary 30s
 	instanceTransfers                 bool
 	health                            *healthHTTP

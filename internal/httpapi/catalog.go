@@ -41,6 +41,8 @@ func (h *Handler) catalogFailure(w http.ResponseWriter, r *http.Request, e error
 		return
 	}
 	switch {
+	case errors.Is(e, comic.ErrImageBusy):
+		h.imageBusy(w, r, http.StatusServiceUnavailable)
 	case errors.Is(e, model.ErrDisabled):
 		h.error(w, r, 409, "library_disabled", "书库已停用")
 	case errors.Is(e, model.ErrTrashed):
@@ -418,6 +420,11 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	r, release, ok := h.admitImage(w, r)
+	if !ok {
+		return
+	}
+	defer release()
 	var before *model.Edition
 	if !cover {
 		before, e = h.catalog.Edition(r.Context(), r.PathValue("id"))
@@ -435,7 +442,7 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 			h.catalogFailure(w, r, comic.ErrChanged)
 			return
 		}
-		h.servePageImage(w, r, *before, index)
+		h.servePageImage(w, r, *before, index, true)
 		return
 	}
 	data, kind, e := h.catalog.Image(r.Context(), r.PathValue("id"), revision, index, true)
@@ -443,6 +450,12 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 		h.catalogFailure(w, r, e)
 		return
 	}
+	free, e := h.catalog.Pool.ReserveResponse(r.Context(), data)
+	if e != nil {
+		h.catalogFailure(w, r, e)
+		return
+	}
+	defer free()
 	serveCatalogImage(w, r, data, kind)
 }
 

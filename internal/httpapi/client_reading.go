@@ -140,6 +140,17 @@ func (h *Handler) clientPageImage(w http.ResponseWriter, r *http.Request) {
 		h.error(w, r, 400, "invalid_request", "页码无效")
 		return
 	}
+	purpose := r.Header.Values(imagePurposeHeader)
+	display := len(purpose) == 0 || len(purpose) == 1 && purpose[0] == "display"
+	if !display && (len(purpose) != 1 || purpose[0] != "prefetch") {
+		h.error(w, r, 400, "invalid_image_purpose", "图片用途必须是 display 或 prefetch")
+		return
+	}
+	r, release, ok := h.admitImage(w, r)
+	if !ok {
+		return
+	}
+	defer release()
 	b := h.clientEditionVersion(w, r)
 	if b == nil {
 		return
@@ -148,5 +159,5 @@ func (h *Handler) clientPageImage(w http.ResponseWriter, r *http.Request) {
 		h.catalogFailure(w, r, model.ErrNotFound)
 		return
 	}
-	h.servePageImage(w, r, *b, int(index)+1)
+	h.servePageImage(w, r, *b, int(index)+1, display)
 }

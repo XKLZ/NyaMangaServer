@@ -67,7 +67,6 @@ type Pool struct {
 	entries          map[string]*session
 	changed          chan struct{}
 	closed           bool
-	imageSlots       chan struct{}
 	budget           *Budget
 	beforePageDecode func(context.Context, PageKey) // deterministic tests
 }
@@ -79,7 +78,7 @@ func NewPoolWithBudget(b *Budget) *Pool {
 	if b == nil {
 		b = defaultBudget
 	}
-	return &Pool{entries: map[string]*session{}, changed: make(chan struct{}), imageSlots: b.slots, budget: b}
+	return &Pool{entries: map[string]*session{}, changed: make(chan struct{}), budget: b}
 }
 func (p *Pool) signal() { close(p.changed); p.changed = make(chan struct{}) }
 func (p *Pool) Sweep(now time.Time) {
@@ -512,19 +511,20 @@ func (w contextWriter) Write(data []byte) (int, error) {
 }
 
 func (p *Pool) Image(ctx context.Context, root, relative string, size, mtime int64, entry int, cover bool) ([]byte, string, string, error) {
-	select {
-	case p.imageSlots <- struct{}{}:
-	case <-ctx.Done():
-		return nil, "", "", ctx.Err()
+	release, err := p.enterImage(ctx)
+	if err != nil {
+		return nil, "", "", err
 	}
-	defer func() { <-p.imageSlots }()
+	defer release()
 	return p.decodeArchiveImage(ctx, root, relative, size, mtime, entry, cover, nil, nil)
 }
 
 func (p *Pool) decodeArchiveImage(ctx context.Context, root, relative string, size, mtime int64, entry int, cover bool, source *SourceIdentity, retain func(*imageMemory, []byte, string) error) ([]byte, string, string, error) {
-	s, release, e := p.acquire(ctx, root, relative, size, mtime)
+	wait, cancelWait := imageWaitContext(ctx)
+	s, release, e := p.acquire(wait, root, relative, size, mtime)
+	cancelWait()
 	if e != nil {
-		return nil, "", "", e
+		return nil, "", "", imageWaitError(ctx, e)
 	}
 	defer release()
 	if source != nil {
@@ -580,7 +580,10 @@ func (p *Pool) decodeArchiveImage(ctx context.Context, root, relative string, si
 	if e != nil || actual != format {
 		return nil, "", "", ErrImage
 	}
-	hash := fmt.Sprintf("%x", sha1.Sum(raw))
+	var hash string
+	if retain == nil {
+		hash = fmt.Sprintf("%x", sha1.Sum(raw))
+	}
 	kind := "image/" + format
 	if format == "jpeg" {
 		kind = "image/jpeg"

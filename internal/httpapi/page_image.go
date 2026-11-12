@@ -2,11 +2,15 @@ package httpapi
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"nyamangaserver.local/server/internal/auth"
+	"nyamangaserver.local/server/internal/comic"
 	"nyamangaserver.local/server/internal/model"
 )
 
@@ -50,14 +54,20 @@ func serveImageBytes(w http.ResponseWriter, r *http.Request, data []byte, kind, 
 	http.ServeContent(w, r, "image", time.Time{}, bytes.NewReader(data))
 }
 
-func (h *Handler) servePageImage(w http.ResponseWriter, r *http.Request, edition model.Edition, index int) {
-	key, err := h.catalog.PreparePage(r.Context(), edition, index)
+func (h *Handler) servePageImage(w http.ResponseWriter, r *http.Request, edition model.Edition, index int, display bool) {
+	deadline, _ := r.Context().Value(httpImageDeadlineKey{}).(time.Time)
+	wait, cancel := context.WithDeadline(r.Context(), deadline)
+	key, err := h.catalog.PreparePage(wait, edition, index)
+	if errors.Is(wait.Err(), context.DeadlineExceeded) && r.Context().Err() == nil {
+		err = comic.ErrImageBusy
+	}
+	cancel()
 	if err != nil {
 		h.catalogFailure(w, r, err)
 		return
 	}
 	r = imageConditions(r)
-	out, err := h.catalog.Pool.Page(r.Context(), key, func(tag string) bool { return imageNotModified(r, tag) })
+	out, err := h.catalog.Pool.Page(r.Context(), key, display, func(tag string) bool { return imageNotModified(r, tag) })
 	if err != nil {
 		h.catalogFailure(w, r, err)
 		return
@@ -102,4 +112,72 @@ func (h *Handler) recheckImageSession(r *http.Request) error {
 		return model.ErrPasswordChangeRequired
 	}
 	return nil
+}
+
+const imagePurposeHeader = "X-Nya-Image-Purpose"
+const imagesPerSession = 4
+const imagesGlobal = 16
+
+type httpImageDeadlineKey struct{}
+
+type imageRequests struct {
+	mu        sync.Mutex
+	total     int
+	bySession map[string]int
+}
+
+func (a *imageRequests) acquire(key string) (func(), int) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.bySession[key] >= imagesPerSession {
+		return nil, http.StatusTooManyRequests
+	}
+	if a.total >= imagesGlobal {
+		return nil, http.StatusServiceUnavailable
+	}
+	if a.bySession == nil {
+		a.bySession = make(map[string]int)
+	}
+	a.bySession[key]++
+	a.total++
+	return func() {
+		a.mu.Lock()
+		defer a.mu.Unlock()
+		a.total--
+		a.bySession[key]--
+		if a.bySession[key] == 0 {
+			delete(a.bySession, key)
+		}
+	}, 0
+}
+
+func (h *Handler) admitImage(w http.ResponseWriter, r *http.Request) (*http.Request, func(), bool) {
+	identity := r.Context().Value(sessionKey{}).(identity)
+	var key string
+	if identity.device != nil {
+		key = "device:" + identity.device.ID
+	} else {
+		key = "web:" + string(identity.session.Hash)
+	}
+	release, status := h.pageRequests.acquire(key)
+	if status != 0 {
+		h.imageBusy(w, r, status)
+		return nil, nil, false
+	}
+	wait := h.imageWait
+	if wait <= 0 {
+		wait = comic.ImageWait
+	}
+	deadline := time.Now().Add(wait)
+	ctx := context.WithValue(comic.WithImageDeadline(r.Context(), deadline), httpImageDeadlineKey{}, deadline)
+	return r.WithContext(ctx), release, true
+}
+
+func (h *Handler) imageBusy(w http.ResponseWriter, r *http.Request, status int) {
+	w.Header().Set("Retry-After", "1")
+	if status == http.StatusTooManyRequests {
+		h.error(w, r, status, "image_session_limit", "当前会话的并行图片请求已满")
+		return
+	}
+	h.error(w, r, status, string(comic.ErrImageBusy), "图片处理繁忙，请稍后重试")
 }

@@ -28,7 +28,7 @@ type Budget struct {
 	mu          sync.Mutex
 	used, limit int64
 	changed     chan struct{}
-	slots       chan struct{}
+	scheduler   imageScheduler
 	pages       map[PageKey]*list.Element
 	verified    list.List
 	hot         list.List
@@ -40,7 +40,7 @@ func NewBudget(bytes int64) *Budget {
 	if bytes <= 0 {
 		bytes = DefaultImageMemory
 	}
-	return &Budget{limit: bytes, changed: make(chan struct{}), slots: make(chan struct{}, 2), pages: make(map[PageKey]*list.Element), flights: make(map[PageKey]*pageFlight)}
+	return &Budget{limit: bytes, changed: make(chan struct{}), pages: make(map[PageKey]*list.Element), flights: make(map[PageKey]*pageFlight)}
 }
 
 var defaultBudget = NewBudget(DefaultImageMemory)
@@ -89,9 +89,11 @@ func (b *Budget) reserveMemory(ctx context.Context, n int64) (*imageMemory, erro
 	if n < 0 || n > b.limit {
 		return nil, limitError("decode", "estimated_memory_bytes", n, b.limit)
 	}
+	waitCtx, cancel := imageWaitContext(ctx)
+	defer cancel()
 	for {
-		if e := ctx.Err(); e != nil {
-			return nil, e
+		if e := waitCtx.Err(); e != nil {
+			return nil, imageWaitError(ctx, e)
 		}
 		b.mu.Lock()
 		for b.used+n > b.limit && b.evictHotLocked() {
@@ -105,8 +107,8 @@ func (b *Budget) reserveMemory(ctx context.Context, n int64) (*imageMemory, erro
 		b.mu.Unlock()
 		select {
 		case <-wait:
-		case <-ctx.Done():
-			return nil, ctx.Err()
+		case <-waitCtx.Done():
+			return nil, imageWaitError(ctx, waitCtx.Err())
 		}
 	}
 }

@@ -21,12 +21,11 @@ func (p *Pool) normalizeImage(ctx context.Context, raw []byte, thumbnail bool) (
 	if len(raw) > int(MaxPage) {
 		return nil, limitError("read", "page_bytes", int64(len(raw)), MaxPage)
 	}
-	select {
-	case p.imageSlots <- struct{}{}:
-	case <-ctx.Done():
-		return nil, ctx.Err()
+	release, err := p.enterImage(ctx)
+	if err != nil {
+		return nil, err
 	}
-	defer func() { <-p.imageSlots }()
+	defer release()
 	cfg, format, e := image.DecodeConfig(bytes.NewReader(raw))
 	if e != nil {
 		return nil, ErrImage
