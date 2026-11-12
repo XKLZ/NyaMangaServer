@@ -169,6 +169,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
+	if strings.HasPrefix(r.URL.Path, "/api/v1/") && !strings.HasPrefix(r.URL.Path, "/api/v1/gallery-highlight/") &&
+		len(r.Header.Values("Authorization")) != 0 && len(r.Header.Values("Cookie")) != 0 {
+		h.error(rw, r, 400, "mixed_credentials", "不能同时使用Cookie和Bearer凭证")
+		return
+	}
 	h.mux.ServeHTTP(rw, r)
 }
 func (h *Handler) method(method string, f http.HandlerFunc) http.HandlerFunc {

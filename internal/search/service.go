@@ -8,6 +8,7 @@ import (
 )
 
 type Repository interface {
+	ClientWorkSearch(context.Context, model.ClientSearchInput, *model.SearchNode) (model.ClientSearchResult, error)
 	Search(context.Context, string, model.SearchInput, *model.SearchNode) (model.SearchResult, error)
 	SearchMatches(context.Context, string, model.SearchInput, *model.SearchNode, string, string) (model.MatchResult, error)
 	SavedSearches(context.Context, string) ([]model.SavedSearch, error)
@@ -18,6 +19,10 @@ type Service struct{ repo Repository }
 
 func New(r Repository) *Service { return &Service{r} }
 func Validate(v model.SearchInput) (model.SearchInput, *model.SearchNode, error) {
+	return validate(v, false)
+}
+
+func validate(v model.SearchInput, client bool) (model.SearchInput, *model.SearchNode, error) {
 	if e := model.ValidatePropertyFilter(v.Properties); e != nil {
 		return v, nil, e
 	}
@@ -42,7 +47,9 @@ func Validate(v model.SearchInput) (model.SearchInput, *model.SearchNode, error)
 	if v.PageSize == 0 {
 		v.PageSize = 24
 	}
-	if v.Page < 1 || v.Page > 10000000 || v.PageSize < 1 || v.PageSize > 100 || !one(v.Scope, "all", "favorites", "missing_metadata", "missing", "corrupt", "hidden") || !one(v.Collapse, "none", "works", "series") || !one(v.Sort, "title", "indexed_at") || !one(v.Order, "asc", "desc") || !one(v.FileState, "", "available", "missing", "corrupt", "needs_review") {
+	scopeValid := one(v.Scope, "all", "favorites", "missing_metadata", "missing", "corrupt", "hidden") || client && v.Scope == "continue"
+	sortValid := one(v.Sort, "title", "indexed_at") || client && v.Sort == "last_read_at"
+	if v.Page < 1 || v.Page > 10000000 || v.PageSize < 1 || v.PageSize > 100 || !scopeValid || !one(v.Collapse, "none", "works", "series") || !sortValid || !one(v.Order, "asc", "desc") || !one(v.FileState, "", "available", "missing", "corrupt", "needs_review") {
 		return v, nil, model.ErrInput
 	}
 	n, e := Parse(v.Query)

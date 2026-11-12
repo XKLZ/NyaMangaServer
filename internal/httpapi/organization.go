@@ -13,13 +13,15 @@ import (
 )
 
 func accountID(r *http.Request) string {
-	return r.Context().Value(sessionKey{}).(identity).session.AccountID
+	a, _ := model.Actor(r.Context())
+	return a.ID
 }
 func (h *Handler) WithOrganization(o *organization.Service, s *search.Service, u *userstate.Service) *Handler {
 	h.organization = o
 	h.search = s
 	h.userstate = u
 	h.readingRoutes(h.protected)
+	h.protected.HandleFunc(clientWorkSearchPath, h.method("POST", h.clientWorkSearch))
 	p := h.protected
 	p.HandleFunc("/api/v1/books/search", h.method("POST", h.searchBooks))
 	p.HandleFunc("/api/v1/editions/search", h.method("POST", h.searchBooks))

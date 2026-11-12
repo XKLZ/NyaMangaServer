@@ -7,6 +7,7 @@ import (
 
 // Repository describes the persistence operations required by this service.
 type Repository interface {
+	ClientReadingContext(context.Context, string, string, string) (model.ClientReadingContext, error)
 	SetFileEncoding(context.Context, string, model.EncodingUpdate, model.FileParsing, int) (*model.Edition, error)
 	JobContext(context.Context, string) (context.Context, error)
 	CoverSelection(context.Context, string) (model.CoverSelection, error)

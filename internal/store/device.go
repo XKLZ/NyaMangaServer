@@ -183,9 +183,19 @@ func deviceTableWrite(table, op, row, actor, passwordChange string) string {
 		if op == "UPDATE" {
 			return owned + " AND NEW.id=OLD.id AND NEW.token_hash=OLD.token_hash AND NEW.auth_revision=OLD.auth_revision AND NEW.client_instance_id=OLD.client_instance_id AND NEW.device_name=OLD.device_name AND NEW.created_at=OLD.created_at"
 		}
+	case "catalog_state":
+		if op == "UPDATE" {
+			return "NEW.singleton=OLD.singleton AND NEW.revision=OLD.revision+1"
+		}
 	case "events":
-		if op == "INSERT" {
-			return "NEW.owner_account_id=" + actor
+		switch op {
+		case "INSERT":
+			return "NEW.owner_account_id=" + actor + " OR (NEW.type='catalog' AND NEW.resource_id='catalog' AND NEW.owner_account_id IS NULL)"
+		case "UPDATE":
+			// The existing event-scope trigger fills acl_library_id after insertion.
+			return "NEW.id=OLD.id AND NEW.type=OLD.type AND NEW.resource_id=OLD.resource_id AND NEW.revision=OLD.revision AND NEW.created_at=OLD.created_at AND NEW.owner_account_id IS OLD.owner_account_id AND NEW.acl_library_id IS NULL"
+		case "DELETE":
+			return "OLD.created_at<unixepoch()-86400 OR OLD.id<=COALESCE((SELECT id FROM main.events ORDER BY id DESC LIMIT 1 OFFSET 10000),0)"
 		}
 	case "accounts":
 		if op == "UPDATE" {

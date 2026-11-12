@@ -14,6 +14,10 @@ const deviceRenewPath = deviceSessionsPath + "/current/renew"
 
 // A device gets only these exact methods and registered handler patterns.
 var deviceRoutes = map[string]map[string]bool{
+	clientWorkSearchPath:                             {"POST": true},
+	clientContextPath:                                {"GET": true},
+	clientPagesPath:                                  {"GET": true},
+	clientImagePath:                                  {"GET": true},
 	clientCapabilitiesPath:                           {"GET": true},
 	deviceSessionsPath:                               {"GET": true},
 	deviceSessionsPath + "/{id}":                     {"DELETE": true},
@@ -121,10 +125,6 @@ func (h *Handler) deviceRevoke(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) authenticateDevice(w http.ResponseWriter, r *http.Request, next http.Handler, headers []string) {
-	if len(r.Header.Values("Cookie")) != 0 {
-		h.error(w, r, 400, "mixed_credentials", "不能同时使用Cookie和Bearer凭证")
-		return
-	}
 	if !h.deviceOrigin(w, r) {
 		return
 	}

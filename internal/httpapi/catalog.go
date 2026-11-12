@@ -16,6 +16,9 @@ import (
 )
 
 func (h *Handler) catalogRoutes(m *http.ServeMux) {
+	m.HandleFunc(clientContextPath, h.method("GET", h.clientReadingContext))
+	m.HandleFunc(clientPagesPath, h.method("GET", h.clientPages))
+	m.HandleFunc(clientImagePath, h.method("GET", h.clientPageImage))
 	m.HandleFunc("/api/v1/libraries", h.libraries)
 	m.HandleFunc("/api/v1/libraries/{id}", h.method("PATCH", h.patchLibrary))
 	m.HandleFunc("/api/v1/libraries/{id}/scans", h.method("POST", h.startScan))
@@ -446,6 +449,10 @@ func (h *Handler) image(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	serveCatalogImage(w, r, data, kind)
+}
+
+func serveCatalogImage(w http.ResponseWriter, r *http.Request, data []byte, kind string) {
 	w.Header().Set("Content-Type", kind)
 	w.Header().Set("Cache-Control", "private, no-cache")
 	w.Header().Set("ETag", fmt.Sprintf("\"%x\"", sha256.Sum256(data)))
