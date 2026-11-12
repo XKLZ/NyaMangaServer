@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "NyaMangaServer API",
-    "version": "0.7.0-beta.1",
+    "version": "0.7.0-beta.2",
     "description": "Authenticated management, read-only ingestion, metadata, organization, persistent tasks and reversible index maintenance. Whole-instance credential-bearing backup/restore requires identical build and ledger. Full reader remains future work."
   },
   "servers": [

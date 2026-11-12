@@ -101,6 +101,7 @@ def main():
     try:
         start(config_files[0])
         run('beta-api.py', '--url', origin, '--token-file', root / 'input/setup-token', '--evidence', evidence, '--image', root / 'input/foreground.png')
+        run('beta-client.py', '--url', origin, '--evidence', evidence)
         if args.browser:
             # Test persistence across a normal restart and keep browser login
             # independent of the preceding account/password rate-limit tests.
@@ -117,6 +118,7 @@ def main():
         start(config_files[1])
         run('beta-recovery.py', 'verify', '--url', origin, '--evidence', evidence)
         run('beta-recovery.py', 'verify-write-barrier', '--url', origin, '--evidence', evidence)
+        run('beta-client.py', '--url', origin, '--evidence', evidence, '--restored')
         stop()
         status = subprocess.check_output([str(args.restore.resolve()), '--config', str(config_files[1]), '--status'], env=environment)
         json.loads(status)

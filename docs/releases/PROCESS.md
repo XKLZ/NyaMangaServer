@@ -28,8 +28,8 @@
 
 浏览器门禁使用`release-native.py --browser`创建全新匿名实例，并运行当前生产网页脚本：登录、七个深链接、完整漫画详情、四组视口／主题、键盘焦点和CSP，再进行标准备份恢复。历史`web/tests/e2e`包含专用夹具前置条件及旧页面断言，当前不能直接作为统一发行套件；保留源码，不将其失败记为通过。发布验证不启动Vite或接触日常实例。
 
-- tag：`v0.7.0-beta.1`
-- image：`ghcr.io/xklz/nyamangaserver:0.7.0-beta.1`
+- tag：`v0.7.0-beta.2`
+- image：`ghcr.io/xklz/nyamangaserver:0.7.0-beta.2`
 - 不使用latest，不覆写已存在版本。
 - Release标记pre-release，包含安装包、离线镜像、SHA256SUMS、构建身份和发布说明；GitHub另生成源码归档。
 

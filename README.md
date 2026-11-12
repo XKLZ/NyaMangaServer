@@ -4,7 +4,7 @@
 
 将源漫画只读挂载到服务器，在浏览器中完成入库、元数据核对、版本归纳、系列整理和标签管理。**本项目目前是管理服务，不包含完整阅读器。**
 
-> 首个公开测试版本为 `v0.7.0-beta.1`。镜像和安装附件以 [Releases](https://github.com/XKLZ/NyaMangaServer/releases) 中实际发布的产物为准；源码可用不代表发行验证已经通过。
+> 本次测试版为 `v0.7.0-beta.2`。镜像和安装附件以 [Releases](https://github.com/XKLZ/NyaMangaServer/releases) 中实际发布的产物为准；源码可用不代表发行验证已经通过。
 
 ## 能做什么
 
@@ -63,7 +63,7 @@ sudo docker compose up -d --wait
 - 恢复要求匹配的应用版本、完整构建身份及迁移账本；请同时保存原镜像或配对程序。不能用任意新版本直接恢复旧开发包。
 - SQLite 数据卷必须位于服务主机本地文件系统；不要放在 SMB／NFS。
 
-完整范围与当前验证状态见[测试版说明](docs/releases/v0.7.0-beta.1.md)。
+完整范围与当前验证状态见[测试版说明](docs/releases/v0.7.0-beta.2.md)。
 
 ## 开发与文档
 

@@ -97,7 +97,8 @@ def initialize(args):
     api.call('GET', '/auth/session')
     assert next(iter(api.jar)).has_nonstandard_attr('HttpOnly')
     diagnostics = api.call('GET', '/diagnostics')
-    assert diagnostics['schema_version'] == 27
+    expected_schema = max(int(p.name.split('_', 1)[0]) for p in (Path(__file__).resolve().parents[2] / 'migrations').glob('[0-9][0-9][0-9]_*.sql'))
+    assert diagnostics['schema_version'] == expected_schema
     features = api.call('GET', '/settings/enhancements')
     assert not features['features']['work_recommendations']['enabled']
     assert not features['features']['series_recommendations']['enabled']

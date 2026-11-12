@@ -58,7 +58,7 @@ sudo docker compose up -d --wait
 
 ```sh
 sha256sum -c SHA256SUMS --ignore-missing
-sudo docker load -i nyamangaserver-0.7.0-beta.1-linux-amd64.tar.gz
+sudo docker load -i nyamangaserver-0.7.0-beta.2-linux-amd64.tar.gz
 # 配置中镜像标签与归档一致，无需联网 pull
 sudo docker compose up -d --pull never --wait
 ```
@@ -89,9 +89,9 @@ sudo docker compose up -d --pull never --wait
 
 ```sh
 python3 deploy/build-image.py --platform linux/amd64 \
-  -t nyamangaserver:0.7.0-beta.1-local --output /private/output/image.tar
+  -t nyamangaserver:0.7.0-beta.2-local --output /private/output/image.tar
 ```
 
 [compose.yaml](compose.yaml) 保留开发者本地构建入口；最终用户使用 [compose.release.yaml](compose.release.yaml) 的固定公共镜像。构建时可联网安装锁定依赖，启动不安装包或下载模型。模型按[运行说明](../runtime/recommendations/README.md)单独准备并只读挂载。
 
-早期同平台匿名验证边界见[BETA.md](BETA.md)，本次公开候选状态见[发行说明](../docs/releases/v0.7.0-beta.1.md)。
+早期同平台匿名验证边界见[BETA.md](BETA.md)，本次公开候选状态见[发行说明](../docs/releases/v0.7.0-beta.2.md)。

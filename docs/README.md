@@ -3,7 +3,7 @@
 ## 使用与部署
 
 - [Docker 安装与运行](../deploy/README.md)
-- [版本、兼容性与验证范围](releases/v0.7.0-beta.1.md)
+- [版本、兼容性与验证范围](releases/v0.7.0-beta.2.md)
 - [完整导入与审核](import-workflow.md)
 - [版本管理](version-management.md)与[系列管理](series-management.md)
 - [标签管理](tag-management.md)、[标签图片](tag-images.md)与[关注](tag-follows.md)

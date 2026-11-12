@@ -4,6 +4,7 @@ import subprocess
 
 CASES = {
     './internal/store': [
+        'TestReadingRestartPreservesHistoryAndChecksRevisions',
         'TestPrivateSnapshotAfterAuthorizationAndCancellation',
         'TestHealthCompletionWatcherCancellationCannotLeaveFinishing',
         'TestHealthOldCompletionCannotUnlockNewGeneration',
@@ -26,7 +27,22 @@ CASES = {
         'TestHealthIOBarrierPausesTasksAndRejectsOldPublish',
     ],
     './internal/library': ['TestCancellationImmediateRestartAndStalePublish'],
-    './internal/httpapi': ['TestCatalogHTTPFlow', 'TestCatalogOpenAPIContract'],
+    './internal/httpapi': [
+        'TestCatalogHTTPFlow', 'TestCatalogOpenAPIContract',
+        'TestOnlineImageConditionsCheckLiveAccessAndSource',
+        'TestOnlineImageAdmissionHoldsThroughSlowSendAndCancellation',
+        'TestOnlineReadingTwoDevicesRestartAndRetry',
+        'TestClientDownloadStreamAbortsOnRevocation',
+        'TestClientDownloadPreparationStopsAfterRevocation',
+        'TestClientOfflineOperationsReceiptsDependenciesAndTime',
+        'TestClientSearchSnapshotBindsAccountAndLiveAuthorization',
+    ],
+    './internal/comic': [
+        'TestPageCoalescingCancelsOnlyAbandonedWork',
+        'TestPageVerificationSurvivesByteEvictionAndChargesResponse',
+        'TestImageSchedulingPrioritizesDisplayAndReservesPrefetchCapacity',
+        'TestImageWaitExpiresAndReleasesQueueCapacity',
+    ],
     './internal/app': ['TestOfflineRehashUpgradeLockRestartAndOfflineCover'],
     './internal/recommendation': None,
 }
