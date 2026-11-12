@@ -262,6 +262,14 @@ func (s *Store) WriteReadingState(ctx context.Context, id string, in model.Readi
 }
 func (s *Store) StartReadingSession(ctx context.Context, id string, in model.ReadingSessionStart) (model.ReadingSession, error) {
 	var out model.ReadingSession
+	intent := in.Intent
+	if intent == "" {
+		intent = model.ReadingStart
+	}
+	if intent != model.ReadingStart && (intent != model.ReadingRestart || s.Version < 29) {
+		return out, model.ErrInput
+	}
+
 	account, e := readingAccount(ctx)
 	if e != nil {
 		return out, e
@@ -275,9 +283,15 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 	if e != nil {
 		return out, e
 	}
-	e = scopeRow(ctx, tx, "SELECT id,content_revision,started_at FROM reading_sessions WHERE account_id=? AND edition_id=? AND idempotency_key=?", account, id, in.IdempotencyKey).Scan(&out.ID, &out.ContentRevision, &out.StartedAt)
+	intentColumn := "'start'"
+	if s.Version >= 29 {
+		intentColumn = "intent"
+	}
+	var recordedIntent string
+	e = scopeRow(ctx, tx, "SELECT id,content_revision,started_at,"+intentColumn+" FROM reading_sessions WHERE account_id=? AND edition_id=? AND idempotency_key=?", account, id, in.IdempotencyKey).
+		Scan(&out.ID, &out.ContentRevision, &out.StartedAt, &recordedIntent)
 	if e == nil {
-		if out.ContentRevision != in.ContentRevision {
+		if out.ContentRevision != in.ContentRevision || recordedIntent != intent {
 			return out, model.ErrReadingIdempotency
 		}
 		if hasParsing(ctx, tx) {
@@ -306,6 +320,15 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 	if e = prepareReading(&out.State, in.Expected, in.ContentRevision, in.AcceptContentChange, in.ParsingRevision, in.AcceptParsingChange); e != nil {
 		return out, e
 	}
+	if intent == model.ReadingRestart {
+		if total == nil {
+			return out, model.ErrReadingUnknownPages
+		}
+		page := 0
+		out.State.PageIndex = &page
+		out.State.Completed = false
+		out.State.CompletedAt = nil
+	}
 	if out.State.ReadCount == math.MaxInt64 {
 		return out, model.ErrCapacity
 	}
@@ -320,6 +343,13 @@ func (s *Store) StartReadingSession(ctx context.Context, id string, in model.Rea
 	out.State.Revision++
 	if e = saveReading(ctx, tx, account, out.State, in.Expected); e != nil {
 		return out, e
+	}
+	if s.Version >= 29 {
+		if _, e = tx.ExecContext(ctx, "INSERT INTO reading_sessions(id,account_id,edition_id,idempotency_key,content_revision,started_at,parsing_revision,intent) VALUES(?,?,?,?,?,?,?,?)",
+			out.ID, account, id, in.IdempotencyKey, rev, out.StartedAt, out.State.ParsingRevision, intent); e != nil {
+			return out, e
+		}
+		return out, tx.Commit()
 	}
 	if _, e = tx.ExecContext(ctx, "INSERT INTO reading_sessions(id,account_id,edition_id,idempotency_key,content_revision,started_at) VALUES(?,?,?,?,?,?)", out.ID, account, id, in.IdempotencyKey, rev, out.StartedAt); e != nil {
 		return out, e

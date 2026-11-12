@@ -8,6 +8,9 @@ var ErrReadingConfirmation = errors.New("reading_content_confirmation_required")
 var ErrReadingUnknownPages = errors.New("reading_page_count_unknown")
 var ErrReadingIdempotency = errors.New("reading_idempotency_conflict")
 
+const ReadingStart = "start"
+const ReadingRestart = "restart"
+
 type ReadingState struct {
 	ParsingRevision        int64  `json:"parsing_revision"`
 	CurrentParsingRevision int64  `json:"current_parsing_revision"`
@@ -37,6 +40,7 @@ type ReadingWrite struct {
 	SessionID           string `json:"session_id,omitempty"`
 }
 type ReadingSessionStart struct {
+	Intent              string `json:"intent,omitempty"`
 	ParsingRevision     int64  `json:"parsing_revision"`
 	AcceptParsingChange bool   `json:"accept_parsing_change"`
 	Expected            int64  `json:"expected_revision"`

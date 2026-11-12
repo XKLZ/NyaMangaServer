@@ -112,7 +112,7 @@ func TestScanStorageMigrationPreserves26RollbackAndReopen(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer s.Close()
-	if s.Version != 28 {
+	if s.Version != 29 {
 		t.Fatal(s.Version)
 	}
 	var foreign int

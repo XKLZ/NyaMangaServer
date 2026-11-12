@@ -50,7 +50,7 @@ func TestRecommendationUpgradePreservesEveryTaskReference(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer s.Close()
-	if s.Version != 28 {
+	if s.Version != 29 {
 		t.Fatal(s.Version)
 	}
 	j, e := s.Job(ctx, "old")

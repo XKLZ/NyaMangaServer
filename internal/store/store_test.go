@@ -52,7 +52,7 @@ func TestMigrationAndConnectionPolicy(t *testing.T) {
 		c.Close()
 	}
 	var n int
-	if e := s.Read.QueryRow("SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 113 {
+	if e := s.Read.QueryRow("SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").Scan(&n); e != nil || n != 115 {
 		t.Fatal(n, e)
 	}
 	if e := s.Close(); e != nil {
@@ -63,7 +63,7 @@ func TestMigrationAndConnectionPolicy(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer again.Close()
-	if again.Version != 28 {
+	if again.Version != 29 {
 		t.Fatal(again.Version)
 	}
 	b, e := migrations.Files.ReadFile("001_foundation.sql")

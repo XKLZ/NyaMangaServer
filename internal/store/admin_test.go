@@ -262,7 +262,7 @@ func TestAdministrationUpgradePreservesSchemaThreeAndRollback(t *testing.T) {
 	if e != nil || len(items) != 1 || items[0].State != "pending" {
 		t.Fatal(items, e)
 	}
-	if db.Version != 28 {
+	if db.Version != 29 {
 		t.Fatal(db.Version)
 	}
 	rows, e := db.Read.Query("PRAGMA foreign_key_check")
